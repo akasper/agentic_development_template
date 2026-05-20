@@ -1,7 +1,10 @@
-# GitHub Agentic Operating System (GHAOS)
+# GHAOS Agentic Development Template
 
-Default template repository for all agentic development projects using the GHAOS methodology.
+Official starter template for **GitHub Agentic Operating System (GHAOS)**.
 
 ## Quick Start
-1. Use this template for new projects.
-2. Follow AGENTS.md for all agent interactions.
+1. Use this template for new repos
+2. Enable GitHub features (Issues, Wiki, Projects, etc.)
+3. Customize AGENTS.md
+
+Full playbook: your Google Doc link
