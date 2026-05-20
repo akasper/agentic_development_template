@@ -1,8 +1,9 @@
-name: GHAOS CI
+name: CI
 on: [pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - run: echo 'Implement project-specific tests'
+      - uses: actions/checkout@v4
+      - name: Run Tests
+        run: echo "Tests would run here"
