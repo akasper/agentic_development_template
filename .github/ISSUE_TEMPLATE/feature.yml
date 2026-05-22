@@ -1,11 +1,74 @@
-name: Feature Request
-title: '[Feature] '
-labels: [feature]
-assignees: []
----
-
-## Description
-
-## Acceptance Criteria
-
-## Related Discussions
+name: Feature
+description: Propose a feature tied to a PLATE epic.
+title: "[Feature] "
+labels:
+  - Feature
+  - status:triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feature issues must carry the `Feature` label and the corresponding `Epic: short-name` label. Feature pull requests must update `CURRENT.md`.
+  - type: input
+    id: epic_label
+    attributes:
+      label: Corresponding epic label
+      description: "Add the matching `Epic: short-name` label to this issue after creation."
+      placeholder: "Epic: onboarding"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: What problem does this solve, and for whom?
+    validations:
+      required: true
+  - type: textarea
+    id: desired_behavior
+    attributes:
+      label: Desired behavior
+      description: Describe the behavior that should exist when the feature is complete.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      description: List observable acceptance criteria.
+      placeholder: "- [ ] ..."
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: Test expectations
+      description: What unit, integration, E2E, or manual verification should prove this works?
+      placeholder: "- [ ] Add failing test before implementation\n- [ ] Add or update E2E coverage where appropriate"
+    validations:
+      required: true
+  - type: textarea
+    id: documentation
+    attributes:
+      label: Documentation impact
+      description: What should change in CURRENT.md, wiki pages, release notes, or public docs?
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and risks
+      description: Identify blockers, decisions, permissions, data migrations, or risky areas.
+  - type: checkboxes
+    id: readiness
+    attributes:
+      label: PLATE readiness checklist
+      options:
+        - label: "This issue has the `Feature` label."
+          required: true
+        - label: "This issue has or will receive the corresponding `Epic: short-name` label."
+          required: true
+        - label: "Acceptance criteria are clear enough for an agent to implement and a human to review."
+          required: true
+        - label: "Documentation impact has been considered."
+          required: true
