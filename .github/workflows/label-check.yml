@@ -1,0 +1,147 @@
+name: PLATE Label Check
+
+
+
+on:
+
+  pull_request:
+  
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+    
+  issues:
+  
+    types: [opened, edited, labeled, unlabeled, reopened]
+    
+
+
+permissions:
+
+  contents: read
+  
+  issues: read
+  
+  pull-requests: read
+  
+
+
+jobs:
+
+  check-labels:
+  
+    runs-on: ubuntu-latest
+    
+    steps:
+    
+      - name: Validate PLATE label rules
+      
+        uses: actions/github-script@v7
+        
+        with:
+        
+          script: |
+          
+            const issueTypeLabels = ['Bug', 'Feature', 'Epic'];
+            
+            const supportingIssueTypeLabels = ['Research', 'Audit', 'Migration'];
+            
+            const prTypeLabels = ['Bug', 'Feature', 'Documentation'];
+            
+            const payload = context.payload;
+            
+            const target = payload.pull_request || payload.issue;
+            
+            const isPullRequest = Boolean(payload.pull_request);
+            
+
+
+            if (!target) {
+            
+              core.info('No issue or pull request payload found.');
+              
+              return;
+              
+            }
+            
+
+
+            const labels = (target.labels || []).map((label) => typeof label === 'string' ? label : label.name);
+            
+            const hasEpicLabel = labels.some((label) => /^Epic: .+/.test(label));
+            
+
+
+            core.info(`Labels: ${labels.join(', ') || '(none)'}`);
+            
+
+
+            if (isPullRequest) {
+            
+              const matches = labels.filter((label) => prTypeLabels.includes(label));
+              
+              if (matches.length < 1) {
+              
+                core.setFailed(`Pull requests must have at least one PLATE type label: ${prTypeLabels.join(', ')}.`);
+                
+                return;
+                
+              }
+              
+              if (matches.length > 1) {
+              
+                core.warning(`This PR has multiple type labels (${matches.join(', ')}). PLATE recommends exactly one unless the book permits a mixed-type change.`);
+                
+              }
+              
+              return;
+              
+            }
+            
+
+
+            const ordinaryMatches = labels.filter((label) => issueTypeLabels.includes(label));
+            
+            const supportingMatches = labels.filter((label) => supportingIssueTypeLabels.includes(label));
+            
+            if (ordinaryMatches.length < 1 && supportingMatches.length < 1) {
+            
+              core.setFailed(`Issues must have at least one PLATE type label. Ordinary issues use ${issueTypeLabels.join(', ')}; process issues may use ${supportingIssueTypeLabels.join(', ')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
