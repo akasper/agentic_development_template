@@ -1,0 +1,63 @@
+name: Epic
+description: Define a large PLATE outcome that owns a dedicated epic label.
+title: "[Epic] "
+labels:
+  - Epic
+  - status:triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use an Epic issue for a durable product or process outcome. Every Epic must have its own `Epic: short-name` label, and every corresponding Feature issue should carry that label.
+  - type: input
+    id: epic_label
+    attributes:
+      label: Epic label
+      description: "The dedicated label for this epic, using the pattern `Epic: short-name`."
+      placeholder: "Epic: onboarding"
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: What user, business, or system outcome should this epic create?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and boundaries
+      description: What is included, and what is explicitly not included?
+    validations:
+      required: true
+  - type: textarea
+    id: success_criteria
+    attributes:
+      label: Success criteria
+      description: How will humans know this epic is complete?
+      placeholder: "- [ ] ..."
+    validations:
+      required: true
+  - type: textarea
+    id: child_features
+    attributes:
+      label: Expected child features
+      description: List known child Feature issues or planned feature slices.
+      placeholder: "- #123"
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks and assumptions
+      description: Identify major risks, assumptions, dependencies, and unresolved decisions.
+  - type: checkboxes
+    id: readiness
+    attributes:
+      label: PLATE readiness checklist
+      options:
+        - label: "This epic has or will receive a dedicated `Epic: short-name` label."
+          required: true
+        - label: "The scope is small enough to decompose into Feature issues."
+          required: true
+        - label: "Success criteria are testable or auditable."
+          required: true

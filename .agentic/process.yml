@@ -1,2 +1,138 @@
-# GHAOS Process Configuration
-# Define workflows, phases, and agent behaviors here
+process:
+  name: "Process Lifecycle Agentic Task Engine"
+  short_name: "PLATE"
+  version: "0.5"
+  source_of_truth: "PLATE book and appendix artifacts"
+  template_repository: "akasper/plate_template"
+
+principles:
+  - "Humans keep judgment."
+  - "Agents do the toil."
+  - "GitHub preserves truth."
+  - "Labels are stable metadata, not decoration."
+  - "GitHub Projects fields should carry frequently changing planning state."
+
+artifacts:
+  spec: "SPEC.md"
+  current_state: "CURRENT.md"
+  agent_rules: "AGENTS.md"
+  process_config: ".agentic/process.yml"
+  labels: ".github/labels.yml"
+  issue_templates: ".github/ISSUE_TEMPLATE"
+  pull_request_template: ".github/PULL_REQUEST_TEMPLATE.md"
+  tests: "tests"
+  wiki_source_candidates:
+    - "docs/wiki"
+    - "CURRENT.md"
+    - "docs/features"
+
+labels:
+  prefix_convention:
+    area: "area:"
+    risk: "risk:"
+    need: "need:"
+    priority: "priority:"
+    status: "status:"
+    epic: "Epic:"
+  issue_type_labels:
+    required_any:
+      - "Bug"
+      - "Feature"
+      - "Epic"
+    supporting:
+      - "Research"
+      - "Audit"
+      - "Migration"
+    recommended_cardinality: "exactly_one_primary_type_unless_process_issue"
+  pull_request_type_labels:
+    required_any:
+      - "Bug"
+      - "Feature"
+      - "Documentation"
+    recommended_cardinality: "exactly_one"
+  epic_rules:
+    every_epic_issue_has_dedicated_label: true
+    epic_label_pattern: "^Epic: .+"
+    every_feature_issue_has_epic_label: true
+  stable_metadata_rule: "Create labels only when they change routing, enforcement, reporting, auditing, review burden, or agent behavior."
+
+issues:
+  required_for_feature:
+    - "Feature label"
+    - "Epic: short-name label"
+    - "problem statement"
+    - "desired behavior"
+    - "acceptance criteria"
+    - "test expectations"
+    - "documentation impact"
+  required_for_bug:
+    - "Bug label"
+    - "reproduction or need:reproduction label"
+    - "expected behavior"
+    - "actual behavior"
+    - "regression test plan"
+  required_for_epic:
+    - "Epic label"
+    - "dedicated Epic: short-name label"
+    - "outcome"
+    - "scope boundaries"
+    - "success criteria"
+
+pull_requests:
+  required_type_labels:
+    - "Bug"
+    - "Feature"
+    - "Documentation"
+  feature_pr_requires_current_md: true
+  required_sections:
+    - "Summary"
+    - "Linked work"
+    - "Change type label"
+    - "Tests and evidence"
+    - "Documentation and traceability"
+    - "Risk and rollback"
+    - "Agent self-review"
+  human_merge_required: true
+
+workflows:
+  label_check:
+    name: "PLATE Label Check"
+    path: ".github/workflows/label-check.yml"
+    required: true
+  pr_documentation_check:
+    name: "PR Documentation Check"
+    path: ".github/workflows/pr-documentation-check.yml"
+    required_for_feature_prs: true
+  sync_wiki_on_merge:
+    name: "Sync to Wiki on Merge"
+    path: ".github/workflows/sync-wiki-on-merge.yml"
+    trigger: "merged Feature pull request"
+    safety_model_status: "scaffold_pending_refinement"
+  ci:
+    name: "CI"
+    path: ".github/workflows/ci.yml"
+  audit:
+    name: "PLATE Audit"
+    path: ".github/workflows/audit.yml"
+  release:
+    name: "Release"
+    path: ".github/workflows/release.yml"
+
+audit:
+  cadence: "weekly_or_pre_release"
+  drift_targets:
+    - "SPEC.md"
+    - "CURRENT.md"
+    - "issues"
+    - "pull requests"
+    - "tests"
+    - "wiki"
+    - "labels"
+    - "workflows"
+  output_directory: "docs/audits"
+
+open_design_items:
+  - "Define full wiki-sync safety model."
+  - "Add Definition of Done templates."
+  - "Add failure playbooks."
+  - "Introduce a running example project and reuse throughout artifacts."

@@ -1,9 +1,53 @@
 name: Audit Finding
-title: '[Audit] '
-labels: [audit]
-assignees: []
----
-
-## Finding
-
-## Severity
+description: Record PLATE drift, missing evidence, or process non-compliance.
+title: "[Audit] "
+labels:
+  - Audit
+  - status:triage
+body:
+  - type: input
+    id: audit_run
+    attributes:
+      label: Audit run or source
+      description: Link the audit report, workflow run, manual review, or command output that found this issue.
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - risk:low
+        - risk:medium
+        - risk:high
+        - risk:critical
+    validations:
+      required: true
+  - type: textarea
+    id: expected_state
+    attributes:
+      label: Expected state
+      description: What should be true under PLATE?
+    validations:
+      required: true
+  - type: textarea
+    id: actual_state
+    attributes:
+      label: Actual state
+      description: What drift, gap, or mismatch was observed?
+    validations:
+      required: true
+  - type: textarea
+    id: affected_artifacts
+    attributes:
+      label: Affected artifacts
+      description: List files, issues, PRs, labels, workflows, wiki pages, releases, or public claims affected.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Proposed correction
+      description: What should change to restore PLATE alignment?
+    validations:
+      required: true

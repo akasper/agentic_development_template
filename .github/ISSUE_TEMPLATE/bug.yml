@@ -1,11 +1,70 @@
-name: Bug Report
-title: '[Bug] '
-labels: [bug]
-assignees: []
----
-
-## Description
-
-## Steps to Reproduce
-
-## Expected Behavior
+name: Bug
+description: Report incorrect behavior, regression, or defect.
+title: "[Bug] "
+labels:
+  - Bug
+  - status:triage
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is broken?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide reliable steps, a failing test, logs, screenshots, or note that `need:reproduction` should be applied.
+      placeholder: "1. ...\n2. ...\n3. ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk level
+      options:
+        - risk:low
+        - risk:medium
+        - risk:high
+        - risk:critical
+    validations:
+      required: true
+  - type: textarea
+    id: regression_tests
+    attributes:
+      label: Regression test plan
+      description: What test should fail before the fix and pass after the fix?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Logs, screenshots, recordings, commit hashes, versions, environment details, or related links.
+  - type: checkboxes
+    id: readiness
+    attributes:
+      label: PLATE readiness checklist
+      options:
+        - label: "This issue has the `Bug` label."
+          required: true
+        - label: "A reproduction path or `need:reproduction` label is provided."
+          required: true
+        - label: "A regression test plan is included."
+          required: true

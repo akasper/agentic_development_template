@@ -1,9 +1,40 @@
-name: Research Task
-title: '[Research] '
-labels: [research]
-assignees: []
----
-
-## Question / Goal
-
-## Expected Output
+name: Research
+description: Investigate options, answer a design question, or prepare a decision.
+title: "[Research] "
+labels:
+  - Research
+  - status:triage
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Research question
+      description: What decision or uncertainty should this research resolve?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why does this matter now, and what project artifact does it affect?
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options to compare
+      description: List known options, alternatives, or prior art to evaluate.
+  - type: textarea
+    id: decision_criteria
+    attributes:
+      label: Decision criteria
+      description: What criteria should determine the recommendation?
+    validations:
+      required: true
+  - type: textarea
+    id: expected_output
+    attributes:
+      label: Expected output
+      description: Should this produce an ADR, SPEC update, prototype, issue set, or recommendation memo?
+    validations:
+      required: true
