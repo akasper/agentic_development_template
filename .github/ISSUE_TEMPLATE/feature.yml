@@ -1,19 +1,18 @@
 name: Feature
-description: Propose a feature tied to a PLATE epic.
-title: "[Feature] "
+description: Plan a user-visible or operational capability change.
+title: "[Feature]: "
 labels:
   - Feature
-  - status:triage
 body:
   - type: markdown
     attributes:
       value: |
-        Feature issues must carry the `Feature` label and the corresponding `Epic: short-name` label. Feature pull requests must update `CURRENT.md`.
+        Feature issues must carry exactly one `Epic: short-name` label. Planning state such as priority, owner, target date, and status belongs in GitHub Projects fields.
   - type: input
     id: epic_label
     attributes:
-      label: Corresponding epic label
-      description: "Add the matching `Epic: short-name` label to this issue after creation."
+      label: Epic traceability label
+      description: "Name the existing or proposed `Epic: short-name` label that owns this feature."
       placeholder: "Epic: onboarding"
     validations:
       required: true
@@ -21,21 +20,21 @@ body:
     id: problem
     attributes:
       label: Problem or opportunity
-      description: What problem does this solve, and for whom?
+      description: What user, operational, or business problem does this feature address?
     validations:
       required: true
   - type: textarea
     id: desired_behavior
     attributes:
       label: Desired behavior
-      description: Describe the behavior that should exist when the feature is complete.
+      description: Describe the outcome in product terms rather than implementation details.
     validations:
       required: true
   - type: textarea
     id: acceptance_criteria
     attributes:
       label: Acceptance criteria
-      description: List observable acceptance criteria.
+      description: List concrete conditions that must be true before this issue can close.
       placeholder: "- [ ] ..."
     validations:
       required: true
@@ -43,32 +42,33 @@ body:
     id: tests
     attributes:
       label: Test expectations
-      description: What unit, integration, E2E, or manual verification should prove this works?
-      placeholder: "- [ ] Add failing test before implementation\n- [ ] Add or update E2E coverage where appropriate"
+      description: Identify unit, integration, E2E, regression, fixture, or manual verification expected.
     validations:
       required: true
   - type: textarea
     id: documentation
     attributes:
-      label: Documentation impact
-      description: What should change in CURRENT.md, wiki pages, release notes, or public docs?
+      label: Documentation and traceability impact
+      description: Identify expected updates to CURRENT.md, wiki/docs, release notes, public claims, or ADRs.
     validations:
       required: true
   - type: textarea
     id: dependencies
     attributes:
-      label: Dependencies and risks
-      description: Identify blockers, decisions, permissions, data migrations, or risky areas.
+      label: Dependencies, risks, and open questions
+      description: Link blockers, decisions, research issues, or risks. Add `need:*` labels when follow-up is required.
+    validations:
+      required: false
   - type: checkboxes
     id: readiness
     attributes:
       label: PLATE readiness checklist
       options:
-        - label: "This issue has the `Feature` label."
+        - label: "This feature has or will receive exactly one `Epic: short-name` label."
           required: true
-        - label: "This issue has or will receive the corresponding `Epic: short-name` label."
+        - label: Acceptance criteria are testable.
           required: true
-        - label: "Acceptance criteria are clear enough for an agent to implement and a human to review."
+        - label: Documentation impact is described.
           required: true
-        - label: "Documentation impact has been considered."
+        - label: Mutable planning state will be tracked in GitHub Projects fields rather than labels.
           required: true

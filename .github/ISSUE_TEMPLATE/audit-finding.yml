@@ -1,21 +1,21 @@
-name: Audit Finding
-description: Record PLATE drift, missing evidence, or process non-compliance.
-title: "[Audit] "
+name: Audit finding
+description: Convert PLATE drift or process evidence gaps into visible work.
+title: "[Audit]: "
 labels:
   - Audit
-  - status:triage
 body:
   - type: input
-    id: audit_run
+    id: audit_source
     attributes:
       label: Audit run or source
-      description: Link the audit report, workflow run, manual review, or command output that found this issue.
+      description: Link the audit report, workflow run, manual review, or drift source.
     validations:
       required: true
   - type: dropdown
     id: severity
     attributes:
       label: Severity
+      description: Select the closest risk label.
       options:
         - risk:low
         - risk:medium
@@ -24,30 +24,30 @@ body:
     validations:
       required: true
   - type: textarea
-    id: expected_state
+    id: expected
     attributes:
-      label: Expected state
-      description: What should be true under PLATE?
+      label: Expected PLATE state
+      description: What should be true under the process contract?
     validations:
       required: true
   - type: textarea
-    id: actual_state
+    id: actual
     attributes:
-      label: Actual state
-      description: What drift, gap, or mismatch was observed?
+      label: Actual observed drift
+      description: What is stale, missing, unsupported, unverified, or contradictory?
     validations:
       required: true
   - type: textarea
     id: affected_artifacts
     attributes:
       label: Affected artifacts
-      description: List files, issues, PRs, labels, workflows, wiki pages, releases, or public claims affected.
+      description: List files, issues, PRs, wiki pages, releases, tests, labels, workflows, or public claims.
     validations:
       required: true
   - type: textarea
-    id: correction
+    id: proposed_correction
     attributes:
       label: Proposed correction
-      description: What should change to restore PLATE alignment?
+      description: Describe the preferred fix, owner, rollback consideration, and follow-up evidence.
     validations:
       required: true

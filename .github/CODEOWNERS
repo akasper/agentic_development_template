@@ -1,2 +1,17 @@
-# CODEOWNERS
+# Default human owner for all paths.
 * @akasper
+
+# PLATE process and automation artifacts require explicit owner review.
+/.agentic/ @akasper
+/.github/workflows/ @akasper
+/.github/ISSUE_TEMPLATE/ @akasper
+/.github/PULL_REQUEST_TEMPLATE.md @akasper
+/AGENTS.md @akasper
+/SPEC.md @akasper
+/CURRENT.md @akasper
+
+# Public claims and release posture require human review.
+/README.md @akasper
+/CHANGELOG.md @akasper
+/docs/marketing/ @akasper
+/site/ @akasper

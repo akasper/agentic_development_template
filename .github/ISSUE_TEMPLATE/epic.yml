@@ -1,19 +1,18 @@
 name: Epic
-description: Define a large PLATE outcome that owns a dedicated epic label.
-title: "[Epic] "
+description: Define a parent planning object and its stable traceability label.
+title: "[Epic]: "
 labels:
   - Epic
-  - status:triage
 body:
   - type: markdown
     attributes:
       value: |
-        Use an Epic issue for a durable product or process outcome. Every Epic must have its own `Epic: short-name` label, and every corresponding Feature issue should carry that label.
+        Every Epic issue must define and carry a dedicated `Epic: short-name` label. Child Feature issues must carry the same label.
   - type: input
     id: epic_label
     attributes:
-      label: Epic label
-      description: "The dedicated label for this epic, using the pattern `Epic: short-name`."
+      label: Dedicated epic label
+      description: Name the stable label this epic owns.
       placeholder: "Epic: onboarding"
     validations:
       required: true
@@ -21,21 +20,21 @@ body:
     id: outcome
     attributes:
       label: Desired outcome
-      description: What user, business, or system outcome should this epic create?
+      description: What durable product, operational, or business outcome should this epic produce?
     validations:
       required: true
   - type: textarea
     id: scope
     attributes:
       label: Scope and boundaries
-      description: What is included, and what is explicitly not included?
+      description: What is included, excluded, deferred, or explicitly out of scope?
     validations:
       required: true
   - type: textarea
-    id: success_criteria
+    id: success
     attributes:
       label: Success criteria
-      description: How will humans know this epic is complete?
+      description: What will prove this epic is complete?
       placeholder: "- [ ] ..."
     validations:
       required: true
@@ -43,21 +42,24 @@ body:
     id: child_features
     attributes:
       label: Expected child features
-      description: List known child Feature issues or planned feature slices.
-      placeholder: "- #123"
+      description: Link existing child issues or list expected features to create.
+    validations:
+      required: true
   - type: textarea
     id: risks
     attributes:
-      label: Risks and assumptions
-      description: Identify major risks, assumptions, dependencies, and unresolved decisions.
+      label: Risks, assumptions, and dependencies
+      description: Identify significant risks, decisions, research, dependencies, or migration concerns.
+    validations:
+      required: false
   - type: checkboxes
     id: readiness
     attributes:
-      label: PLATE readiness checklist
+      label: PLATE epic readiness
       options:
-        - label: "This epic has or will receive a dedicated `Epic: short-name` label."
+        - label: "This issue has or will receive its dedicated `Epic: short-name` label."
           required: true
-        - label: "The scope is small enough to decompose into Feature issues."
+        - label: Child features can be decomposed into testable issues.
           required: true
-        - label: "Success criteria are testable or auditable."
+        - label: Success criteria are observable or auditable.
           required: true
