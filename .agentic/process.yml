@@ -26,6 +26,8 @@ artifacts:
   audit_config: ".agentic/audit.yml"
   traceability_config: ".agentic/traceability.yml"
   marketing_config: ".agentic/marketing.yml"
+  migration_config: ".agentic/migration.yml"
+
   labels: ".github/labels.yml"
   issue_templates: ".github/ISSUE_TEMPLATE"
   pull_request_template: ".github/PULL_REQUEST_TEMPLATE.md"
