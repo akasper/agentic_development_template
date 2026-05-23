@@ -21,31 +21,35 @@ jobs:
           script: |
             const labels = context.payload.pull_request.labels.map((label) => label.name);
             const isFeature = labels.includes('Feature');
+            const enabled = String(process.env.PLATE_WIKI_SYNC_ENABLED || '').toLowerCase() === 'true';
             core.setOutput('is_feature', String(isFeature));
+            core.setOutput('enabled', String(enabled));
             core.info(`Feature PR: ${isFeature}`);
-
-      - name: Skip non-Feature PR
+            core.info(`Wiki sync enabled: ${enabled}`);
+        env:
+          PLATE_WIKI_SYNC_ENABLED: ${{ vars.PLATE_WIKI_SYNC_ENABLED }}
+      - name: Skip when not a merged Feature PR
         if: steps.gate.outputs.is_feature != 'true'
-        run: echo "Only merged Feature PRs trigger PLATE wiki sync."
-
+        run: echo "Only merged Feature PRs are eligible for PLATE wiki sync."
+      - name: Skip when wiki sync is not enabled
+        if: steps.gate.outputs.is_feature == 'true' && steps.gate.outputs.enabled != 'true'
+        run: echo "PLATE wiki sync is disabled by default. Set repository variable PLATE_WIKI_SYNC_ENABLED=true to enable."
       - name: Validate wiki token
-        if: steps.gate.outputs.is_feature == 'true'
+        if: steps.gate.outputs.is_feature == 'true' && steps.gate.outputs.enabled == 'true'
         env:
           WIKI_TOKEN: ${{ secrets.WIKI_TOKEN }}
         run: |
           if [ -z "$WIKI_TOKEN" ]; then
-            echo "::error::WIKI_TOKEN is required for wiki synchronization."
+            echo "::error::WIKI_TOKEN is required when PLATE_WIKI_SYNC_ENABLED=true."
             exit 1
           fi
-
       - name: Checkout repository
-        if: steps.gate.outputs.is_feature == 'true'
+        if: steps.gate.outputs.is_feature == 'true' && steps.gate.outputs.enabled == 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Capture PR context
-        if: steps.gate.outputs.is_feature == 'true'
+        if: steps.gate.outputs.is_feature == 'true' && steps.gate.outputs.enabled == 'true'
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -59,18 +63,18 @@ jobs:
             echo "- PR: ${PR_URL}"
             echo "- Merge commit: ${PR_MERGE_SHA}"
             echo "- Synced at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "- Source policy: scoped PLATE wiki sync from repository documentation sources"
           } > tmp_wiki_context/Last-Feature-Merge.md
-
       - name: Clone wiki
-        if: steps.gate.outputs.is_feature == 'true'
+        if: steps.gate.outputs.is_feature == 'true' && steps.gate.outputs.enabled == 'true'
         env:
           WIKI_TOKEN: ${{ secrets.WIKI_TOKEN }}
         run: |
+          set -euo pipefail
           rm -rf tmp_wiki
           git clone "https://x-access-token:${WIKI_TOKEN}@github.com/${{ github.repository }}.wiki.git" tmp_wiki
-
       - name: Stage scoped wiki updates
-        if: steps.gate.outputs.is_feature == 'true'
+        if: steps.gate.outputs.is_feature == 'true' && steps.gate.outputs.enabled == 'true'
         run: |
           set -euo pipefail
           cp tmp_wiki_context/Last-Feature-Merge.md tmp_wiki/Last-Feature-Merge.md
@@ -84,9 +88,8 @@ jobs:
           if [ -f CURRENT.md ]; then
             cp CURRENT.md tmp_wiki/Current-State.md
           fi
-
       - name: Commit and push wiki updates
-        if: steps.gate.outputs.is_feature == 'true'
+        if: steps.gate.outputs.is_feature == 'true' && steps.gate.outputs.enabled == 'true'
         run: |
           set -euo pipefail
           cd tmp_wiki
