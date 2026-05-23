@@ -30,14 +30,15 @@ Create a new repository from this template, then complete the bootstrap checklis
 
 | Step | Action |
 |---|---|
-| 1 | Replace placeholder project language in `SPEC.md` and `CURRENT.md`. |
-| 2 | Review `AGENTS.md` and adjust allowed commands, escalation rules, and project-specific safety constraints. |
-| 3 | Apply `.github/labels.yml` using a label-sync tool or by creating labels manually. |
-| 4 | Configure GitHub Projects fields for mutable planning state such as status, priority, owner, iteration, target date, and release target. |
-| 5 | Confirm that issue forms apply exactly one issue type label and that Feature and Epic issues receive an `Epic: short-name` label. |
-| 6 | Enable the workflows in `.github/workflows/`, then tune CI, audit, release, and pages jobs for the project stack. |
-| 7 | If using wiki sync, set repository variable `PLATE_WIKI_SYNC_ENABLED=true`, create a `WIKI_TOKEN` secret with the narrowest practical permissions, and review the safety model before enabling writes. |
-| 8 | Add the first Epic issue and create a running project example that can be reused across documentation, tests, and wiki pages. |
+| 1 | Replace `@PLATE_REPO_OWNER` in `.github/CODEOWNERS` with your GitHub username or team (e.g., `@your-username` or `@your-org/team-name`). |
+| 2 | Replace placeholder project language in `SPEC.md` and `CURRENT.md`. |
+| 3 | Review `AGENTS.md` and adjust allowed commands, escalation rules, and project-specific safety constraints. |
+| 4 | Apply `.github/labels.yml` using a label-sync tool or by creating labels manually. |
+| 5 | Configure GitHub Projects fields for mutable planning state such as status, priority, owner, iteration, target date, and release target. |
+| 6 | Confirm that issue forms apply exactly one issue type label and that Feature and Epic issues receive an `Epic: short-name` label. |
+| 7 | Enable the workflows in `.github/workflows/`, then tune CI, audit, release, and pages jobs for the project stack. |
+| 8 | If using wiki sync, set repository variable `PLATE_WIKI_SYNC_ENABLED=true`, create a `WIKI_TOKEN` secret with the narrowest practical permissions, and review the safety model before enabling writes. |
+| 9 | Add the first Epic issue and create a running project example that can be reused across documentation, tests, and wiki pages. |
 
 ## Label Taxonomy Principle
 
