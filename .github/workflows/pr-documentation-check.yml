@@ -33,8 +33,7 @@ jobs:
               per_page: 100,
             });
             const changed = files.map((file) => file.filename);
-            core.info(`Changed files:
-${changed.join('\n')}`);
+            core.info(`Changed files:\n${changed.join('\n')}`);
             if (!changed.includes('CURRENT.md')) {
               core.setFailed('Feature pull requests must modify CURRENT.md so durable project state stays current. If this PR is not a Feature, remove the Feature label.');
             }
