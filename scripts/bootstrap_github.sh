@@ -165,8 +165,8 @@ if [[ -n "$OWNER_HANDLE" ]]; then
     codeowners_path="$LOCAL_REPO/.github/CODEOWNERS"
     if [[ -f "$codeowners_path" ]]; then
         if grep -q "@PLATE_REPO_OWNER" "$codeowners_path"; then
-            sed -i.bak "s|@PLATE_REPO_OWNER|$OWNER_HANDLE|g" "$codeowners_path"
-            rm -f "${codeowners_path}.bak"
+            sed "s|@PLATE_REPO_OWNER|$OWNER_HANDLE|g" "$codeowners_path" > "${codeowners_path}.tmp"
+            mv "${codeowners_path}.tmp" "$codeowners_path"
             echo "Updated .github/CODEOWNERS with the provided owner handle."
         else
             echo ".github/CODEOWNERS already uses the requested owner handle."

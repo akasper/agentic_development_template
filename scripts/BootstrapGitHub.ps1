@@ -153,7 +153,7 @@ if ($OwnerHandle -ne "") {
     if (Test-Path $codeownersPath) {
         $content = Get-Content $codeownersPath -Raw -Encoding UTF8
         if ($content -match "@PLATE_REPO_OWNER") {
-            $updated = $content -replace [regex]::Escape("@PLATE_REPO_OWNER"), $OwnerHandle
+            $updated = $content.Replace("@PLATE_REPO_OWNER", $OwnerHandle)
             [System.IO.File]::WriteAllText($codeownersPath, $updated, [System.Text.Encoding]::UTF8)
             Write-Host "Updated .github/CODEOWNERS with the provided owner handle."
         }
