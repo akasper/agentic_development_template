@@ -63,7 +63,7 @@ The generated repository also includes `docs/bootstrap/new-repository-checklist.
 
 Labels are not decoration. In PLATE, labels are stable machine-readable process metadata. A label should exist only if it changes routing, enforcement, auditing, reporting, review burden, or agent behavior. If a state changes frequently during planning, use a GitHub Projects field instead of a label.
 
-The canonical label categories are **type**, **epic**, **area**, **risk**, and **need**. The `need:` prefix is singular by convention. This template intentionally does **not** include default `status:*` or `priority:*` labels because those categories create duplicate sources of truth when GitHub Projects fields are available.
+The canonical label categories are **type**, **epic**, **area**, **risk**, and **need**. The `need:` prefix is singular by convention. This template keeps planning state in GitHub Projects fields, with one automation exception: `status:blocked` and `status:ready-to-work` power native PLATES dependency and kickoff triggers.
 
 ## Required Label Rules
 
@@ -74,6 +74,30 @@ Every Epic issue must define and carry a matching `Epic: short-name` label. Ever
 ## Wiki Synchronization
 
 PLATE expects documentation to move with the product, but automated wiki writes should be explicit rather than accidental. The **Sync to Wiki on Merge** workflow is disabled by default. When enabled, it runs only for merged Feature pull requests, captures provenance, copies only scoped source directories, and commits with an auditable message. Projects should refine the wiki-sync safety model before allowing broad automated rewrites.
+
+## Autonomous Workflow
+
+PLATES provides GitHub-native trigger workflows for issue closure accounting, dependency unblocking, and feature kickoff:
+
+- **`plates-on-issue-closed.yml`**: when a `Feature` or `Question` issue closes, reads the closing comment for:
+  ```text
+  === USAGE REPORT ===
+  tokens: <integer>
+  cost: <$0.00>
+  duration: <hh:mm:ss>
+  === END USAGE REPORT ===
+  ```
+  and appends the parsed record to `.agentic/COSTS.md`. If repository variable `PLATE_COST_DASHBOARD_ISSUE` is set to an issue number, it also posts a summary comment there.
+- **`plates-unblock-features.yml`**: on issue close/label events, checks native GitHub issue dependencies. When a dependent `Feature` issue has zero open `blocked by` dependencies, it removes `status:blocked` and applies `status:ready-to-work`.
+- **`plates-start-feature.yml`**: when a `Feature` issue receives `status:ready-to-work`, it kicks off implementation by posting a trigger comment, or dispatches a configured orchestrator workflow when `PLATE_MAIN_ORCHESTRATOR_WORKFLOW` is set.
+
+Recommended labels for this automation:
+
+- `Feature` / `Question` issue type labels (existing PLATE type labels)
+- `status:blocked`
+- `status:ready-to-work`
+
+To use native dependency unblocking, link blockers directly on Feature issues via GitHub's built-in **Blocked by** relationships (not ad-hoc text lists).
 
 ## Human Merge Rule
 

@@ -104,6 +104,13 @@
   color: "ededed"
   description: "This PR does not resolve a tracked issue (chore, dependency bump, hotfix). Silences the issue-link check."
 
+- name: "status:blocked"
+  color: "b60205"
+  description: "Feature issue has one or more open native GitHub blockers."
+- name: "status:ready-to-work"
+  color: "0e8a16"
+  description: "Feature issue has no open native GitHub blockers and can be started by PLATES triggers."
+
 - name: "Epic: example"
   color: "5319e7"
   description: "Example epic traceability label; replace with project-specific Epic: short-name labels."

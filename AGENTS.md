@@ -106,6 +106,18 @@ Every issue must close with a traceable git artifact — either a code change in
 
 When GitHub's native closing keyword (`Closes #N`, `Fixes #N`, `Resolves #N`) is present in the PR body and the PR merges to the default branch, GitHub automatically closes the linked issue. **Always include a closing keyword in the PR body.** This is enforced by `.github/workflows/pr-issue-link-check.yml` (warning gate).
 
+Before closing any issue (manually or via linked PR), post a final comment that includes a structured usage block:
+
+```text
+=== USAGE REPORT ===
+tokens: <integer>
+cost: <$0.00>
+duration: <hh:mm:ss>
+=== END USAGE REPORT ===
+```
+
+`Feature` and `Question` issue closures are harvested by `.github/workflows/plates-on-issue-closed.yml` and appended to `.agentic/COSTS.md`.
+
 ## Autonomous Mode
 
 Autonomous mode is an opt-in operating posture for unattended sessions (overnight runs, long-running autopilot, `/delegate` tasks) where no human reviewer is available interactively. It selectively lifts the self-merge prohibition for lightweight, low-risk PRs.
@@ -153,7 +165,7 @@ gh api -X PUT repos/OWNER/REPO/actions/permissions/workflow \
 
 ## Label Rules
 
-Use labels as stable process metadata. Do not create ad hoc labels unless they change routing, enforcement, reporting, auditing, review burden, or agent behavior. Use GitHub Projects fields for frequently changing planning state such as status, priority, owner, rank, iteration, target date, or release target.
+Use labels as stable process metadata. Do not create ad hoc labels unless they change routing, enforcement, reporting, auditing, review burden, or agent behavior. Use GitHub Projects fields for frequently changing planning state such as priority, owner, rank, iteration, target date, or release target. The `status:blocked` and `status:ready-to-work` labels are the explicit exception used by PLATES native trigger workflows.
 
 | Label Family | Usage |
 |---|---|
