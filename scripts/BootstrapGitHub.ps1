@@ -230,6 +230,7 @@ if ($InitWiki) {
             $env:GIT_ASKPASS = $askpassFile
             $env:GIT_TERMINAL_PROMPT = "0"
             & git -c credential.helper= clone $cloneUrl $wikiDir
+            if ($LASTEXITCODE -ne 0) { throw "git clone failed (exit code $LASTEXITCODE). Is the wiki enabled on the repository?" }
 
             Copy-Item $wikiSource -Destination (Join-Path $wikiDir "Home.md") -Force
 
