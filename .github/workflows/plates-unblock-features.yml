@@ -5,6 +5,7 @@ on:
     types: [closed, labeled]
 
 permissions:
+  actions: write
   issues: write
 
 jobs:
@@ -13,6 +14,8 @@ jobs:
     steps:
       - name: Promote unblocked Feature issues to ready
         uses: actions/github-script@v7
+        env:
+          ORCHESTRATOR_WORKFLOW: ${{ vars.PLATE_MAIN_ORCHESTRATOR_WORKFLOW }}
         with:
           script: |
             const owner = context.repo.owner;
@@ -108,4 +111,56 @@ jobs:
               });
 
               core.info(`Feature #${feature.number} moved to status:ready-to-work.`);
+
+              // GitHub suppresses workflow runs for events created by GITHUB_TOKEN,
+              // so applying status:ready-to-work above will not trigger
+              // plates-start-feature.yml. Inline the kickoff here so the
+              // unblock -> ready -> start chain remains intact.
+              const workflowId = String(process.env.ORCHESTRATOR_WORKFLOW || '').trim();
+              let dispatched = false;
+
+              if (workflowId) {
+                try {
+                  await github.rest.actions.createWorkflowDispatch({
+                    owner,
+                    repo,
+                    workflow_id: workflowId,
+                    ref: context.payload.repository.default_branch,
+                    inputs: {
+                      issue_number: String(feature.number),
+                      issue_url: feature.html_url,
+                      trigger: 'status:ready-to-work'
+                    }
+                  });
+                  dispatched = true;
+                } catch (error) {
+                  core.warning(`Failed to dispatch ${workflowId} for feature #${feature.number}: ${error.message}`);
+                }
+              }
+
+              const kickoffBody = dispatched
+                ? [
+                    'PLATES kickoff: dispatched the main orchestrator workflow for this ready Feature issue.',
+                    '',
+                    `- Workflow: \`${workflowId}\``,
+                    `- Trigger: \`status:ready-to-work\` (auto-promoted by plates-unblock-features)`
+                  ].join('\n')
+                : [
+                    'PLATES kickoff: this Feature issue is ready to work.',
+                    '',
+                    'No orchestrator workflow is configured, so this comment acts as the GitHub-native start trigger.',
+                    '',
+                    '```text',
+                    '@copilot start',
+                    `issue: #${feature.number}`,
+                    'mode: feature-implementation',
+                    '```'
+                  ].join('\n');
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: feature.number,
+                body: kickoffBody
+              });
             }
