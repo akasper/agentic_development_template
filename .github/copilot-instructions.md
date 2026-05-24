@@ -21,6 +21,7 @@ This repository is a **PLATE template**, not an application codebase. The import
 - `.github\labels.yml`, `.github\ISSUE_TEMPLATE\`, and `.github\PULL_REQUEST_TEMPLATE.md` define the work intake and review metadata.
 - `.github\workflows\label-check.yml` enforces required issue and PR type labels.
 - `.github\workflows\pr-documentation-check.yml` enforces that `Feature` PRs update `CURRENT.md`.
+- `.github\workflows\auto-merge.yml` enables autonomous PR merging when `.github/AUTONOMOUS_MODE` is present and the PR carries the `auto-merge` label.
 - `.github\workflows\sync-wiki-on-merge.yml` runs only for merged `Feature` PRs on `main`, then copies scoped documentation sources into the GitHub wiki.
 
 Read those pieces together when making process changes. A change in one of them usually implies matching updates in the others.
@@ -29,9 +30,11 @@ Read those pieces together when making process changes. A change in one of them 
 
 - Treat repository artifacts as the source of durable truth. If behavior, process, or evidence changes, update the relevant artifact instead of relying on chat history.
 - If `AGENTS.md`, `.agentic\process.yml`, and the template files disagree, preserve the PLATE intent and keep them aligned.
-- Labels are stable process metadata, not casual tags. Use type labels (`Bug`, `Feature`, `Epic`, `Documentation`, `Research`, `Audit`, `Migration`) and prefixed labels (`Epic:`, `area:`, `risk:`, `need:`, `priority:`, `status:`) according to the existing taxonomy.
+- Labels are stable process metadata, not casual tags. Use type labels (`Bug`, `Feature`, `Epic`, `Documentation`, `Research`, `Audit`, `Migration`) and prefixed labels (`Epic:`, `area:`, `risk:`, `need:`) according to the existing taxonomy.
 - `Feature` issues must carry both the `Feature` label and a matching `Epic: short-name` label. Their issue template expects acceptance criteria, test expectations, and documentation impact.
 - `Bug` work should include a reproduction path or explicitly signal the gap with `need:reproduction`, plus a regression test plan.
-- Every PR must carry a type label. `Feature` PRs must update `CURRENT.md`; documentation-only changes should use the `Documentation` label instead of pretending to be product behavior changes.
+- Every PR must carry a type label. Apply it atomically via `gh pr create --label <type>`. `Feature` PRs must update `CURRENT.md`; documentation-only changes should use the `Documentation` label.
+- **Autonomous mode** is enabled when `.github/AUTONOMOUS_MODE` exists on the default branch. When active, agents may label eligible `risk:low` PRs `auto-merge` and call `gh pr merge --auto --squash` after `gh pr create`. Full eligibility rules in `AGENTS.md §Autonomous Mode`. Never use `auto-merge` on PRs touching `AGENTS.md`, `SPEC.md`, workflows, credentials, auth, payments, or public claims. Agents may never create or delete the `AUTONOMOUS_MODE` marker file themselves.
+- `.github\workflows\auto-merge.yml` enforces the marker file check as a second gate.
 - Prefer small, scoped documentation and wiki updates. The wiki sync workflow is intentionally conservative and currently treats `CURRENT.md`, `docs\wiki`, and `docs\features` as the sync inputs.
-- Do not weaken tests, documentation gates, or workflow checks to make a change pass. Human review and merge authority remain outside agent authority.
+- Do not weaken tests, documentation gates, or workflow checks to make a change pass. Human review and merge authority remain outside agent authority except as defined in `AGENTS.md §Autonomous Mode`.
