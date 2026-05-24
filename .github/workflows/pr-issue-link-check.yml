@@ -26,7 +26,7 @@ jobs:
             }
 
             // GitHub's native closing keywords (case-insensitive), optionally followed by a URL or #number
-            const closingPattern = /\b(closes?|fixe?s?|resolve?s?)\s+(#\d+|https?:\/\/github\.com\/[^\s]+\/issues\/\d+)/i;
+            const closingPattern = /\b(closes?|closed|fixe?s?|fixed|resolve[sd]?)\s+(#\d+|https?:\/\/github\.com\/[^\s]+\/issues\/\d+)/i;
 
             if (closingPattern.test(body)) {
               core.info('Closing keyword found — linked issue will auto-close on merge.');
