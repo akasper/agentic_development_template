@@ -229,7 +229,7 @@ if ($InitWiki) {
             }
             $env:GIT_ASKPASS = $askpassFile
             $env:GIT_TERMINAL_PROMPT = "0"
-            & git clone $cloneUrl $wikiDir
+            & git -c credential.helper= clone $cloneUrl $wikiDir
 
             Copy-Item $wikiSource -Destination (Join-Path $wikiDir "Home.md") -Force
 
@@ -242,7 +242,7 @@ if ($InitWiki) {
                 & git -C $wikiDir config user.email $authorEmail
                 & git -C $wikiDir add Home.md
                 & git -C $wikiDir commit -m "docs: initialize wiki home page"
-                & git -C $wikiDir push origin master
+                & git -c credential.helper= -C $wikiDir push origin master
                 Write-Host "Initialized the wiki homepage from docs/wiki/Home.md."
             }
         } finally {

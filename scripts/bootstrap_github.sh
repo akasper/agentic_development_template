@@ -222,11 +222,11 @@ if $INIT_WIKI; then
     clone_url="https://github.com/${REPO}.wiki.git"
     GIT_ASKPASS_SCRIPT=$(mktemp)
     trap 'rm -rf "$wiki_dir"; rm -f "$EXISTING_LABELS_FILE" "$GIT_ASKPASS_SCRIPT"' EXIT
-    printf '#!/bin/sh\necho "%s"\n' "$token" > "$GIT_ASKPASS_SCRIPT"
+    printf "#!/bin/sh\necho '%s'\n" "$token" > "$GIT_ASKPASS_SCRIPT"
     chmod +x "$GIT_ASKPASS_SCRIPT"
     export GIT_ASKPASS="$GIT_ASKPASS_SCRIPT"
     export GIT_TERMINAL_PROMPT=0
-    git clone "$clone_url" "$wiki_dir"
+    git -c credential.helper= clone "$clone_url" "$wiki_dir"
     cp "$wiki_source" "$wiki_dir/Home.md"
 
     if [[ -z "$(git -C "$wiki_dir" status --short)" ]]; then
@@ -236,7 +236,7 @@ if $INIT_WIKI; then
         git -C "$wiki_dir" config user.email "$author_email"
         git -C "$wiki_dir" add Home.md
         git -C "$wiki_dir" commit -m "docs: initialize wiki home page"
-        git -C "$wiki_dir" push origin master
+        git -c credential.helper= -C "$wiki_dir" push origin master
         echo "Initialized the wiki homepage from docs/wiki/Home.md."
     fi
     unset GIT_ASKPASS GIT_TERMINAL_PROMPT
