@@ -143,7 +143,7 @@ jobs:
             const missing = guidanceFiles.filter((path) => !changedPaths.has(path));
 
             if (missing.length > 0) {
-              core.warning(`PR closes Question issue(s) ${questionIssues.map((issue) => `#${issue.number}`).join(', ')} without updating ${missing.join(', ')}. Per AGENTS.md, update these files when the answer changes operating guidance, or add the "no-guidance-update" label if it does not.`);
+              core.setFailed(`PR closes Question issue(s) ${questionIssues.map((issue) => `#${issue.number}`).join(', ')} without updating ${missing.join(', ')}. Per AGENTS.md, update these files when the answer changes operating guidance, or add the "no-guidance-update" label if it does not.`);
               return;
             }
 
