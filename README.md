@@ -26,19 +26,38 @@ A PLATE repository gives a human project owner and an agent a shared operating e
 
 ## Quick Start
 
-Create a new repository from this template, then complete the bootstrap checklist below. The first bootstrap pass should create labels, enable GitHub Actions, configure repository permissions, enable GitHub Projects for planning state, and enable the wiki only if wiki synchronization will be used.
+Create a new repository from this template, then complete the bootstrap checklist below. The first bootstrap pass should create labels, replace placeholders, configure repository settings, enable GitHub Projects for planning state, and initialize the wiki only if wiki synchronization will be used.
+
+For a faster and more repeatable setup, run the bootstrap helper from the generated repository root. Choose the script for your operating system:
+
+**macOS / Linux / WSL (bash):**
+```bash
+bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main
+# Add --init-wiki only if you plan to enable wiki sync.
+```
+
+**Windows (PowerShell):**
+```powershell
+.\scripts\BootstrapGitHub.ps1 -Repo OWNER/REPO -LocalRepo . -OwnerHandle @your-handle -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main
+# Add -InitWiki only if you plan to enable wiki sync.
+```
+
+Both scripts apply the canonical PLATE labels, remove conflicting default GitHub labels, update `.github/CODEOWNERS`, optionally initialize the wiki from `docs/wiki/Home.md`, enable delete-branch-on-merge, and can apply a conservative baseline branch protection rule. They require only `gh` (GitHub CLI) and `git`.
 
 | Step | Action |
 |---|---|
-| 1 | Replace `@PLATE_REPO_OWNER` in `.github/CODEOWNERS` with your GitHub username or team (e.g., `@your-username` or `@your-org/team-name`). |
-| 2 | Replace placeholder project language in `SPEC.md` and `CURRENT.md`. |
-| 3 | Review `AGENTS.md` and adjust allowed commands, escalation rules, and project-specific safety constraints. |
-| 4 | Apply `.github/labels.yml` using a label-sync tool or by creating labels manually. |
+| 1 | Run `scripts/bootstrap_github.sh` (macOS/Linux/WSL) or `scripts\BootstrapGitHub.ps1` (Windows), or complete the same actions manually. |
+| 2 | Replace `@PLATE_REPO_OWNER` in `.github/CODEOWNERS` with your GitHub username or team if you did not use the helper. |
+| 3 | Replace placeholder project language in `SPEC.md`, `CURRENT.md`, and public-facing docs. |
+| 4 | Review `AGENTS.md` and adjust allowed commands, escalation rules, and project-specific safety constraints. |
 | 5 | Configure GitHub Projects fields for mutable planning state such as status, priority, owner, iteration, target date, and release target. |
 | 6 | Confirm that issue forms apply exactly one issue type label and that Feature and Epic issues receive an `Epic: short-name` label. |
 | 7 | Enable the workflows in `.github/workflows/`, then tune CI, audit, release, and pages jobs for the project stack. |
-| 8 | If using wiki sync, set repository variable `PLATE_WIKI_SYNC_ENABLED=true`, create a `WIKI_TOKEN` secret with the narrowest practical permissions, and review the safety model before enabling writes. |
-| 9 | Add the first Epic issue and create a running project example that can be reused across documentation, tests, and wiki pages. |
+| 8 | Review branch protection and decide whether the baseline rule should also require approvals, code-owner review, status checks, or linear history. |
+| 9 | If using wiki sync, set repository variable `PLATE_WIKI_SYNC_ENABLED=true`, create a `WIKI_TOKEN` secret with the narrowest practical permissions, and review the safety model before enabling writes. |
+| 10 | Add the first real Epic issue and corresponding `Epic: short-name` label, then create a running project example that can be reused across documentation, tests, and wiki pages. |
+
+The generated repository also includes `docs/bootstrap/new-repository-checklist.md`, which separates automatable bootstrap tasks from human-only decisions.
 
 ## Label Taxonomy Principle
 
