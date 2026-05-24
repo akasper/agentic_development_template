@@ -110,6 +110,9 @@
 - name: "status:ready-to-work"
   color: "0e8a16"
   description: "Feature issue has no open native GitHub blockers and can be started by PLATES triggers."
+- name: "no-guidance-update"
+  color: "ededed"
+  description: "PR closes a Question issue whose answer does not change operating guidance. Skips the AGENTS.md/skills.yml update check."
 
 - name: "Epic: example"
   color: "5319e7"
