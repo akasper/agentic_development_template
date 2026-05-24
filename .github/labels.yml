@@ -26,6 +26,9 @@
 - name: "Design"
   color: "f9d0c4"
   description: "Issue type: UX design, architecture design, API contract, data model, or information design."
+- name: "Question"
+  color: "d4c5f9"
+  description: "Issue type: information goal that captures an unknown and closes with documented answer artifacts."
 
 - name: "area:product"
   color: "bfd4f2"

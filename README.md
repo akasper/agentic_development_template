@@ -67,9 +67,9 @@ The canonical label categories are **type**, **epic**, **area**, **risk**, and *
 
 ## Required Label Rules
 
-Every issue must have exactly one PLATE issue type label from `Bug`, `Feature`, `Epic`, `Research`, `Design`, `Audit`, or `Migration`. Every pull request must have exactly one PLATE PR type label from `Bug`, `Feature`, or `Documentation`.
+Every issue must have exactly one PLATE issue type label from `Bug`, `Feature`, `Epic`, `Research`, `Design`, `Question`, `Audit`, or `Migration`. Every pull request must have exactly one PLATE PR type label from `Bug`, `Feature`, or `Documentation`.
 
-Every Epic issue must define and carry a matching `Epic: short-name` label. Every Feature issue must carry exactly one corresponding `Epic: short-name` label. Every Feature pull request must modify `CURRENT.md` and pass the **PR Documentation Check** workflow.
+Every Epic issue must define and carry a matching `Epic: short-name` label. Every Feature issue must carry exactly one corresponding `Epic: short-name` label. Question issues are intentionally not tied to epic labels. Every Feature pull request must modify `CURRENT.md` and pass the **PR Documentation Check** workflow.
 
 ## Wiki Synchronization
 

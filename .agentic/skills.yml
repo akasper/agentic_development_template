@@ -36,6 +36,21 @@ skills:
     required_evidence:
       - "source artifact links"
       - "claim status"
+  - id: "question-handling"
+    description: "Batch triage open Question issues, capture answers, and convert decisions into durable process artifacts."
+    allowed_artifacts:
+      - "AGENTS.md"
+      - ".agentic/skills.yml"
+      - ".agentic/extensions.yml"
+      - "docs/research/**"
+      - ".github/workflows/question-handling.yml"
+      - "scripts/question_batch.sh"
+      - "scripts/QuestionBatch.ps1"
+    required_evidence:
+      - "linked Question issue(s)"
+      - "answer summary"
+      - "artifact updates"
+      - "workflow trigger evidence"
   - id: "audit"
     description: "Detect drift among SPEC, CURRENT, tests, issues, wiki, workflows, labels, and public claims."
     allowed_artifacts:
