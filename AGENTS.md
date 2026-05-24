@@ -71,6 +71,16 @@ Reproduce the failure or document why reproduction is not yet possible. Add a re
 | 3 | Commit the artifact to `docs/design/<feature-slug>.md` or update `docs/wiki/Features/<feature>.md`. |
 | 4 | Open a Documentation PR with `Closes #N` in the body. |
 
+**Question**
+
+| Step | Required Behavior |
+|---|---|
+| 1 | Confirm the issue is labeled `Question` (or legacy `#question`) and clearly states the information goal and answer signal. |
+| 2 | Use batched review to process open questions (`/question-batch` slash command or `scripts/question_batch.sh`). |
+| 3 | Commit the answer artifact (for example `docs/research/<slug>.md`) and any resulting process updates. |
+| 4 | When the answer changes operating guidance, update `AGENTS.md` and `.agentic/skills.yml` in the same PR. |
+| 5 | Open a Documentation PR with `Closes #N` in the body. |
+
 **Audit**
 
 Commit findings to `docs/audits/`. If drift is found, open a follow-up `Bug` or `Feature` issue per finding. Open a Documentation PR with `Closes #N` in the body.
@@ -89,6 +99,7 @@ Every issue must close with a traceable git artifact — either a code change in
 | `Bug` | Bug fix + regression test | `Bug` |
 | `Research` | Findings committed to `docs/research/<slug>.md` or `SPEC.md` update | `Documentation` |
 | `Design` | Artifact committed to `docs/design/<slug>.md` or `docs/wiki/Features/<feature>.md` | `Documentation` |
+| `Question` | Answer artifact committed to `docs/research/<slug>.md` and process updates when guidance changes (`AGENTS.md`, `.agentic/skills.yml`) | `Documentation` |
 | `Audit` | Report committed to `docs/audits/<slug>.md` | `Documentation` |
 | `Migration` | Update committed to `docs/migration/` | `Documentation` |
 | `Epic` | Wiki summary in `docs/wiki/` or epic comment summarizing child outcomes | `Documentation` |
@@ -146,7 +157,7 @@ Use labels as stable process metadata. Do not create ad hoc labels unless they c
 
 | Label Family | Usage |
 |---|---|
-| `Bug`, `Feature`, `Epic`, `Research`, `Design`, `Audit`, `Migration` | Exactly one required issue type label. |
+| `Bug`, `Feature`, `Epic`, `Research`, `Design`, `Question`, `Audit`, `Migration` | Exactly one required issue type label. |
 | `Bug`, `Feature`, `Documentation` | Exactly one required pull request type label. |
 | `Epic: short-name` | Epic identity and feature grouping. Required on Epic and Feature issues. |
 | `area:*` | Stable subsystem or ownership area. |

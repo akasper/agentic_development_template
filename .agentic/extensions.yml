@@ -36,3 +36,16 @@ extensions:
     enablement_variable: "PLATE_WIKI_SYNC_ENABLED"
     required_secret: "WIKI_TOKEN"
     rollback: "Disable the repository variable and revert the wiki sync commit if needed."
+  - id: "question-handling"
+    status: "available"
+    description: "Packages question-specific automation: issue template, slash-command batching, and answer-sync checks."
+    artifacts:
+      - ".github/ISSUE_TEMPLATE/question.yml"
+      - ".github/workflows/question-handling.yml"
+      - "scripts/question_batch.sh"
+      - "scripts/QuestionBatch.ps1"
+      - "AGENTS.md"
+      - ".agentic/skills.yml"
+    default_enabled: true
+    human_approval_required: false
+    rollback: "Revert the question-handling workflow/template/scripts and remove the Question label from active use."

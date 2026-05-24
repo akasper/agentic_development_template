@@ -54,6 +54,7 @@ labels:
       - "Epic"
       - "Research"
       - "Design"
+      - "Question"
       - "Audit"
       - "Migration"
   pull_request_type_labels:
@@ -93,6 +94,11 @@ issues:
     - "research question"
     - "decision criteria"
     - "expected output"
+  required_for_question:
+    - "Question label"
+    - "information goal"
+    - "answer signal"
+    - "required git artifact"
   required_for_audit:
     - "Audit label"
     - "source audit"
@@ -120,6 +126,10 @@ workflows:
   label_check:
     name: "PLATE Label Check"
     path: ".github/workflows/label-check.yml"
+    required: true
+  question_handling:
+    name: "Question Handling"
+    path: ".github/workflows/question-handling.yml"
     required: true
   pr_documentation_check:
     name: "PR Documentation Check"
