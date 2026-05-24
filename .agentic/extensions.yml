@@ -1,2 +1,38 @@
-# Extensions and Integrations
-# Third-party tools and agent extensions
+extensions_registry:
+  version: "0.1"
+  purpose: "Track optional PLATE extensions without making every project carry every advanced artifact."
+  compatibility:
+    minimum_process_version: "0.6"
+    migration_required_when_incompatible: true
+
+extensions:
+  - id: "marketing-site"
+    status: "available"
+    description: "Adds public-facing site configuration, claim review, analytics policy, and launch checklists."
+    artifacts:
+      - ".agentic/marketing.yml"
+      - "docs/marketing/**"
+      - "site/**"
+      - ".github/workflows/pages.yml"
+    default_enabled: false
+    human_approval_required: true
+  - id: "migration"
+    status: "available"
+    description: "Adds adoption artifacts for existing projects moving into PLATE."
+    artifacts:
+      - ".agentic/migration.yml"
+      - "docs/migration/**"
+      - ".github/ISSUE_TEMPLATE/migration-task.yml"
+    default_enabled: false
+    human_approval_required: true
+  - id: "wiki-sync"
+    status: "available"
+    description: "Synchronizes scoped repository documentation into the GitHub wiki after merged Feature PRs."
+    artifacts:
+      - ".github/workflows/sync-wiki-on-merge.yml"
+      - "docs/wiki/**"
+    default_enabled: false
+    human_approval_required: true
+    enablement_variable: "PLATE_WIKI_SYNC_ENABLED"
+    required_secret: "WIKI_TOKEN"
+    rollback: "Disable the repository variable and revert the wiki sync commit if needed."

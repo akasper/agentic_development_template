@@ -1,22 +1,33 @@
 process:
   name: "Process Lifecycle Agentic Task Engine"
   short_name: "PLATE"
-  version: "0.5"
-  source_of_truth: "PLATE book and appendix artifacts"
+  version: "0.6"
   template_repository: "akasper/plate_template"
+  authority_model:
+    doctrine_source: "PLATE book or governing methodology document"
+    template_artifact_source: "this repository"
+    conflict_resolution: "Open a corrective issue or pull request; avoid duplicating fast-changing artifacts in long-form prose."
 
 principles:
   - "Humans keep judgment."
   - "Agents do the toil."
   - "GitHub preserves truth."
   - "Labels are stable metadata, not decoration."
-  - "GitHub Projects fields should carry frequently changing planning state."
+  - "GitHub Projects fields carry frequently changing planning state."
+  - "Template artifacts should live in the repository rather than duplicated book appendices."
 
 artifacts:
   spec: "SPEC.md"
   current_state: "CURRENT.md"
   agent_rules: "AGENTS.md"
   process_config: ".agentic/process.yml"
+  skills_registry: ".agentic/skills.yml"
+  extensions_registry: ".agentic/extensions.yml"
+  audit_config: ".agentic/audit.yml"
+  traceability_config: ".agentic/traceability.yml"
+  marketing_config: ".agentic/marketing.yml"
+  migration_config: ".agentic/migration.yml"
+
   labels: ".github/labels.yml"
   issue_templates: ".github/ISSUE_TEMPLATE"
   pull_request_template: ".github/PULL_REQUEST_TEMPLATE.md"
@@ -31,35 +42,34 @@ labels:
     area: "area:"
     risk: "risk:"
     need: "need:"
-    priority: "priority:"
-    status: "status:"
     epic: "Epic:"
+  disallowed_default_prefixes:
+    - "priority:"
+    - "status:"
+  planning_state_rule: "Use GitHub Projects fields for priority, status, owner, target date, iteration, rank, and release target."
   issue_type_labels:
-    required_any:
+    required_exactly_one:
       - "Bug"
       - "Feature"
       - "Epic"
-    supporting:
       - "Research"
       - "Audit"
       - "Migration"
-    recommended_cardinality: "exactly_one_primary_type_unless_process_issue"
   pull_request_type_labels:
-    required_any:
+    required_exactly_one:
       - "Bug"
       - "Feature"
       - "Documentation"
-    recommended_cardinality: "exactly_one"
   epic_rules:
     every_epic_issue_has_dedicated_label: true
     epic_label_pattern: "^Epic: .+"
-    every_feature_issue_has_epic_label: true
+    every_feature_issue_has_exactly_one_epic_label: true
   stable_metadata_rule: "Create labels only when they change routing, enforcement, reporting, auditing, review burden, or agent behavior."
 
 issues:
   required_for_feature:
     - "Feature label"
-    - "Epic: short-name label"
+    - "exactly one Epic: short-name label"
     - "problem statement"
     - "desired behavior"
     - "acceptance criteria"
@@ -77,6 +87,17 @@ issues:
     - "outcome"
     - "scope boundaries"
     - "success criteria"
+  required_for_research:
+    - "Research label"
+    - "research question"
+    - "decision criteria"
+    - "expected output"
+  required_for_audit:
+    - "Audit label"
+    - "source audit"
+    - "expected state"
+    - "actual drift"
+    - "proposed correction"
 
 pull_requests:
   required_type_labels:
@@ -107,7 +128,10 @@ workflows:
     name: "Sync to Wiki on Merge"
     path: ".github/workflows/sync-wiki-on-merge.yml"
     trigger: "merged Feature pull request"
-    safety_model_status: "scaffold_pending_refinement"
+    default_enabled: false
+    enablement_variable: "PLATE_WIKI_SYNC_ENABLED"
+    required_secret_when_enabled: "WIKI_TOKEN"
+    safety_model_status: "conservative_scoped_opt_in"
   ci:
     name: "CI"
     path: ".github/workflows/ci.yml"
@@ -129,10 +153,10 @@ audit:
     - "wiki"
     - "labels"
     - "workflows"
+    - "marketing claims"
   output_directory: "docs/audits"
 
 open_design_items:
-  - "Define full wiki-sync safety model."
-  - "Add Definition of Done templates."
-  - "Add failure playbooks."
-  - "Introduce a running example project and reuse throughout artifacts."
+  - "Replace generic CI, audit, release, and pages placeholders with stack-specific commands in generated projects."
+  - "Define project-specific wiki page map before enabling broad wiki synchronization."
+  - "Create running example projects outside the book appendices and keep them versioned in repositories."

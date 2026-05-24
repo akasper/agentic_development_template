@@ -2,63 +2,59 @@
 
 ## Summary
 
-Describe the change in plain language. Explain what changed, why it changed, and what a reviewer should focus on.
+Explain the change in product or process terms. Identify whether this PR changes behavior, tests, documentation, process configuration, public claims, or release posture.
 
 ## Required PR Type Label
 
-Apply at least one required PR type label before review.
+Select exactly one PR type label and apply it to this pull request.
 
-| Label | Use When |
-|---|---|
-| `Bug` | The PR fixes incorrect behavior or a regression. |
-| `Feature` | The PR adds or changes product behavior. |
-| `Documentation` | The PR changes only documentation, examples, process artifacts, or public explanation. |
-
-- [ ] This PR has a required type label: `Bug`, `Feature`, or `Documentation`.
-- [ ] If this is a `Feature` PR, it modifies `CURRENT.md`.
-- [ ] If this is a `Feature` PR, it includes or identifies the relevant `Epic: short-name` label or linked epic.
+- [ ] `Bug`
+- [ ] `Feature`
+- [ ] `Documentation`
 
 ## Linked Work
 
-Closes or relates to:
-
-- 
+| Link Type | URL or Reference |
+|---|---|
+| Issue | TBD |
+| Epic | TBD |
+| ADR / Discussion | TBD |
 
 ## Tests and Evidence
 
-| Verification | Result | Notes |
+| Evidence Type | Command, Artifact, or Explanation | Result |
 |---|---|---|
-| Unit tests | Not run |  |
-| Integration tests | Not run |  |
-| End-to-end tests | Not run |  |
-| Manual verification | Not run |  |
-| Regression coverage | Not applicable |  |
-
-Describe any failing tests that were added before implementation, any tests that could not be run, and any evidence a reviewer should inspect.
+| Failing test captured first, if applicable | TBD | TBD |
+| Unit tests | TBD | TBD |
+| Integration tests | TBD | TBD |
+| E2E tests or recording | TBD | TBD |
+| Manual verification | TBD | TBD |
+| Regression coverage | TBD | TBD |
 
 ## Documentation and Traceability
 
-| Artifact | Updated? | Notes |
+| Artifact | Required for This PR? | Updated or Explanation |
 |---|---|---|
-| `SPEC.md` | No |  |
-| `CURRENT.md` | No | Required for Feature PRs. |
-| Wiki source / wiki context | No |  |
-| Release notes / changelog | No |  |
-| Public claims / marketing | No |  |
+| `SPEC.md` | TBD | TBD |
+| `CURRENT.md` | Required for `Feature` PRs | TBD |
+| Wiki or docs source | TBD | TBD |
+| Release notes / `CHANGELOG.md` | TBD | TBD |
+| Public claims / marketing | TBD | TBD |
+| `.agentic/*` process metadata | TBD | TBD |
 
 ## Risk and Rollback
 
 | Question | Answer |
 |---|---|
-| Risk label | `risk:low` / `risk:medium` / `risk:high` / `risk:critical` |
-| Main risk |  |
-| Rollback plan |  |
-| Human decision needed? | No |
+| Risk label applied, if any | TBD |
+| User, data, security, or public-claim risk | TBD |
+| Rollback plan | TBD |
+| Follow-up issue needed | TBD |
 
 ## Agent Self-Review
 
-- [ ] I followed `AGENTS.md` and `.agentic/process.yml`.
-- [ ] I did not weaken tests, checks, or documentation gates to make the PR pass.
-- [ ] I updated durable project memory rather than relying on chat history.
-- [ ] I identified missing information with `need:*` labels or reviewer notes.
-- [ ] I left enough evidence for a human to judge the change.
+- [ ] I followed `AGENTS.md` and did not change product intent without human approval.
+- [ ] I used GitHub Projects fields, not labels, for mutable planning state.
+- [ ] I did not weaken tests, remove required gates, or bypass review.
+- [ ] I updated `CURRENT.md` for a Feature PR or explained why this PR is not a Feature.
+- [ ] I left enough evidence for a human reviewer to verify the change without relying on chat history.
