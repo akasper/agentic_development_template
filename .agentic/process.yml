@@ -53,6 +53,7 @@ labels:
       - "Feature"
       - "Epic"
       - "Research"
+      - "Design"
       - "Audit"
       - "Migration"
   pull_request_type_labels:

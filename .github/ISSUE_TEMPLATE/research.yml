@@ -58,4 +58,4 @@ body:
       label: Closing requirements
       options:
         - label: "This issue will be closed via a Documentation PR with `Closes #N` in the body."
-          required: false
+          required: true
