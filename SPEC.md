@@ -55,3 +55,13 @@ Public claims should be traceable to implemented capability in `CURRENT.md` or c
 | Question | Owner | Needed By | Resolution Path |
 |---|---|---|---|
 | TBD | TBD | TBD | Research issue, ADR, or human decision. |
+
+## External Integrations
+
+When this project integrates with external APIs, third-party services, or data sources, each integration must be catalogued here **before implementation begins**. This prevents naming ambiguities, unrealistic capability assumptions, and blocked implementation work discovered mid-sprint.
+
+| Integration | Provider | API Type | Required Credentials | Where to Get Access | Known Constraints / Blockers |
+|---|---|---|---|---|---|
+| TBD | TBD | TBD | TBD | TBD | TBD |
+
+> **Agent instruction:** Before opening any Feature issue that depends on an external API, verify the integration entry above is complete and the API is reachable. If API availability is uncertain, open a Research issue first.

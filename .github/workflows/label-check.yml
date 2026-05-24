@@ -19,7 +19,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const issueTypeLabels = ['Bug', 'Feature', 'Epic', 'Research', 'Audit', 'Migration'];
+            const issueTypeLabels = ['Bug', 'Feature', 'Epic', 'Research', 'Design', 'Audit', 'Migration'];
             const prTypeLabels = ['Bug', 'Feature', 'Documentation'];
             const target = context.payload.pull_request || context.payload.issue;
             const isPullRequest = Boolean(context.payload.pull_request);

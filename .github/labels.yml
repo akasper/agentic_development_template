@@ -23,6 +23,10 @@
   color: "c5def5"
   description: "Issue type: existing-project PLATE adoption task."
 
+- name: "Design"
+  color: "f9d0c4"
+  description: "Issue type: UX design, architecture design, API contract, data model, or information design."
+
 - name: "area:product"
   color: "bfd4f2"
   description: "Stable area: product intent, scope, or behavior."
@@ -92,6 +96,10 @@
 - name: "auto-merge"
   color: "0e8a16"
   description: "Lightweight PR cleared for autonomous auto-merge when AUTONOMOUS_MODE is active."
+
+- name: "no-issue"
+  color: "ededed"
+  description: "This PR does not resolve a tracked issue (chore, dependency bump, hotfix). Silences the issue-link check."
 
 - name: "Epic: example"
   color: "5319e7"
