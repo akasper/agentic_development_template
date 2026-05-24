@@ -32,12 +32,14 @@ For a faster and more repeatable setup, run the bootstrap helper from the genera
 
 **macOS / Linux / WSL (bash):**
 ```bash
-bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main --init-wiki
+bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main
+# Add --init-wiki only if you plan to enable wiki sync.
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\scripts\BootstrapGitHub.ps1 -Repo OWNER/REPO -LocalRepo . -OwnerHandle @your-handle -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main -InitWiki
+.\scripts\BootstrapGitHub.ps1 -Repo OWNER/REPO -LocalRepo . -OwnerHandle @your-handle -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main
+# Add -InitWiki only if you plan to enable wiki sync.
 ```
 
 Both scripts apply the canonical PLATE labels, remove conflicting default GitHub labels, update `.github/CODEOWNERS`, optionally initialize the wiki from `docs/wiki/Home.md`, enable delete-branch-on-merge, and can apply a conservative baseline branch protection rule. They require only `gh` (GitHub CLI) and `git`.

@@ -217,22 +217,38 @@ if ($InitWiki) {
     $wikiDir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
     New-Item -ItemType Directory -Path $wikiDir | Out-Null
     try {
-        $cloneUrl = "https://x-access-token:${token}@github.com/${Repo}.wiki.git"
-        & git clone $cloneUrl $wikiDir
+        $cloneUrl = "https://github.com/${Repo}.wiki.git"
+        $askpassFile = Join-Path ([System.IO.Path]::GetTempPath()) ("git-askpass-" + [System.IO.Path]::GetRandomFileName())
+        try {
+            if ($env:OS -eq "Windows_NT") {
+                $askpassFile += ".cmd"
+                Set-Content -Path $askpassFile -Value "@echo off`r`necho $token" -NoNewline
+            } else {
+                Set-Content -Path $askpassFile -Value "#!/bin/sh`necho '$token'" -NoNewline
+                & chmod +x $askpassFile
+            }
+            $env:GIT_ASKPASS = $askpassFile
+            $env:GIT_TERMINAL_PROMPT = "0"
+            & git -c credential.helper= clone $cloneUrl $wikiDir
 
-        Copy-Item $wikiSource -Destination (Join-Path $wikiDir "Home.md") -Force
+            Copy-Item $wikiSource -Destination (Join-Path $wikiDir "Home.md") -Force
 
-        $status = & git -C $wikiDir status --short
-        if (-not $status) {
-            Write-Host "Wiki homepage was already up to date."
-        }
-        else {
-            & git -C $wikiDir config user.name  $authorName
-            & git -C $wikiDir config user.email $authorEmail
-            & git -C $wikiDir add Home.md
-            & git -C $wikiDir commit -m "docs: initialize wiki home page"
-            & git -C $wikiDir push origin master
-            Write-Host "Initialized the wiki homepage from docs/wiki/Home.md."
+            $status = & git -C $wikiDir status --short
+            if (-not $status) {
+                Write-Host "Wiki homepage was already up to date."
+            }
+            else {
+                & git -C $wikiDir config user.name  $authorName
+                & git -C $wikiDir config user.email $authorEmail
+                & git -C $wikiDir add Home.md
+                & git -C $wikiDir commit -m "docs: initialize wiki home page"
+                & git -c credential.helper= -C $wikiDir push origin master
+                Write-Host "Initialized the wiki homepage from docs/wiki/Home.md."
+            }
+        } finally {
+            Remove-Item $askpassFile -Force -ErrorAction SilentlyContinue
+            Remove-Item env:\GIT_ASKPASS -ErrorAction SilentlyContinue
+            Remove-Item env:\GIT_TERMINAL_PROMPT -ErrorAction SilentlyContinue
         }
     }
     finally {
