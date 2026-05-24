@@ -1,8 +1,8 @@
 ---
 current_state_version: "0.1"
 process_version: "PLATE 0.6"
-last_verified_at: "TBD"
-last_verified_commit: "TBD"
+last_verified_at: "2026-05-24"
+last_verified_commit: "pending-merge"
 ---
 
 # Current Project State
@@ -13,7 +13,7 @@ last_verified_commit: "TBD"
 
 | Feature | Status | Issue | Pull Request | Tests / Evidence | Wiki / Docs | Release | Last Verified |
 |---|---|---|---|---|---|---|---|
-| Template process baseline | Implemented | TBD | TBD | Repository files and workflow scaffolds | `README.md`, `AGENTS.md` | Unreleased | TBD |
+| Template process baseline | Implemented | — | #2 | Repository files and workflow scaffolds | `README.md`, `AGENTS.md` | Unreleased | 2026-05-24 |
 
 ## Operational Behavior
 

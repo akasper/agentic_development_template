@@ -6,4 +6,4 @@ All notable changes to this project should be recorded here. Each release entry 
 
 | Type | Change | Issue | PR | Evidence |
 |---|---|---|---|---|
-| Process | Establish PLATE template artifact baseline. | TBD | TBD | Repository files, labels, templates, and workflow scaffolds. |
+| Process | Establish PLATE template artifact baseline. | — | #2 | Repository files, labels, templates, and workflow scaffolds. |
