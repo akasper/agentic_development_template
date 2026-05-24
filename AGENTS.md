@@ -26,7 +26,7 @@ For a normal Feature task, follow this loop.
 | 3 | Add or update tests before or alongside implementation. |
 | 4 | Implement the smallest coherent change that satisfies the issue. |
 | 5 | Update `CURRENT.md` to describe the implemented behavior and verification evidence. |
-| 6 | Open a pull request labeled `Feature` and complete the PR template. |
+| 6 | Open a pull request labeled `Feature` and complete the PR template. When using GitHub CLI, apply the type label in the `gh pr create` command itself rather than relying on a later edit step. |
 | 7 | Leave wiki-sync context, release-note context, and audit evidence for the human reviewer and post-merge workflows. |
 
 For a Bug task, reproduce the failure or document why reproduction is not yet possible, add regression coverage, and label missing information with `need:reproduction`, `need:tests`, or `need:human-review` as appropriate.
@@ -47,6 +47,8 @@ Use labels as stable process metadata. Do not create ad hoc labels unless they c
 ## Documentation Rules
 
 Every Feature pull request must modify `CURRENT.md`. Documentation pull requests should explain whether they update process artifacts, product documentation, wiki source material, or public-facing claims. If a change affects feature behavior, update both implementation evidence and documentation evidence.
+
+When opening pull requests through GitHub CLI, prefer an atomic command such as `gh pr create --label Feature` or `gh pr create --label Documentation`. Do not assume a follow-up `gh pr edit --add-label ...` step will always happen.
 
 ## Wiki Sync Rules
 

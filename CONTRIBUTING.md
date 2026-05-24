@@ -10,6 +10,8 @@ Every issue must carry exactly one issue type label: `Bug`, `Feature`, `Epic`, `
 
 Use short descriptive branch names such as `feature/onboarding-copy`, `bug/login-regression`, or `docs/current-state-audit`. Every pull request must carry exactly one PR type label: `Bug`, `Feature`, or `Documentation`. Feature PRs must update `CURRENT.md`.
 
+If a pull request is opened with GitHub CLI, include the type label in the create command itself, for example `gh pr create --label Feature`, instead of treating labeling as a separate best-effort follow-up step.
+
 ## Test-First Preference
 
 Bug fixes should include regression coverage. Feature work should add or update tests before or alongside implementation. If a test cannot be automated yet, document the manual verification evidence and create follow-up work when automation is still required.
