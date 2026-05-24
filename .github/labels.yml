@@ -104,6 +104,10 @@
   color: "ededed"
   description: "This PR does not resolve a tracked issue (chore, dependency bump, hotfix). Silences the issue-link check."
 
+- name: "no-guidance-update"
+  color: "ededed"
+  description: "PR closes a Question issue whose answer does not change operating guidance. Skips the AGENTS.md/skills.yml update check."
+
 - name: "Epic: example"
   color: "5319e7"
   description: "Example epic traceability label; replace with project-specific Epic: short-name labels."
