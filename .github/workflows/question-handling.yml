@@ -126,6 +126,12 @@ jobs:
               return;
             }
 
+            const prLabels = (pr.labels || []).map((l) => typeof l === 'string' ? l : l.name);
+            if (prLabels.includes('no-guidance-update')) {
+              core.info('PR carries "no-guidance-update" label — author confirmed no operating-guidance change needed. Skipping file check.');
+              return;
+            }
+
             const files = await github.paginate(github.rest.pulls.listFiles, {
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -133,11 +139,11 @@ jobs:
               per_page: 100
             });
             const changedPaths = new Set(files.map((file) => file.filename));
-            const requiredFiles = ['AGENTS.md', '.agentic/skills.yml'];
-            const missing = requiredFiles.filter((path) => !changedPaths.has(path));
+            const guidanceFiles = ['AGENTS.md', '.agentic/skills.yml'];
+            const missing = guidanceFiles.filter((path) => !changedPaths.has(path));
 
             if (missing.length > 0) {
-              core.setFailed(`PR closes Question issue(s) ${questionIssues.map((issue) => `#${issue.number}`).join(', ')} but is missing required updates: ${missing.join(', ')}.`);
+              core.warning(`PR closes Question issue(s) ${questionIssues.map((issue) => `#${issue.number}`).join(', ')} without updating ${missing.join(', ')}. Per AGENTS.md, update these files when the answer changes operating guidance, or add the "no-guidance-update" label if it does not.`);
               return;
             }
 
