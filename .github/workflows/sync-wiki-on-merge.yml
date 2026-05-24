@@ -48,6 +48,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Capture PR context
         if: steps.gate.outputs.is_feature == 'true' && steps.gate.outputs.enabled == 'true'
         env:
@@ -77,9 +78,8 @@ jobs:
         if: steps.gate.outputs.is_feature == 'true' && steps.gate.outputs.enabled == 'true'
         run: |
           set -euo pipefail
-          cp tmp_wiki_context/Last-Feature-Merge.md tmp_wiki/Last-Feature-Merge.md
           if [ -d docs/wiki ]; then
-            rsync -av --delete docs/wiki/ tmp_wiki/
+            rsync -av --delete --exclude='.git' docs/wiki/ tmp_wiki/
           fi
           if [ -d docs/features ]; then
             mkdir -p tmp_wiki/Features
@@ -88,6 +88,7 @@ jobs:
           if [ -f CURRENT.md ]; then
             cp CURRENT.md tmp_wiki/Current-State.md
           fi
+          cp tmp_wiki_context/Last-Feature-Merge.md tmp_wiki/Last-Feature-Merge.md
       - name: Commit and push wiki updates
         if: steps.gate.outputs.is_feature == 'true' && steps.gate.outputs.enabled == 'true'
         run: |

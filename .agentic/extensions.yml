@@ -32,6 +32,7 @@ extensions:
       - ".github/workflows/sync-wiki-on-merge.yml"
       - "docs/wiki/**"
     default_enabled: false
+    human_approval_required: true
     enablement_variable: "PLATE_WIKI_SYNC_ENABLED"
     required_secret: "WIKI_TOKEN"
     rollback: "Disable the repository variable and revert the wiki sync commit if needed."
