@@ -27,7 +27,7 @@ jobs:
               return;
             }
 
-            const requested = Number.parseInt(match[1] || '10', 10);
+            const requested = parseInt(match[1] || '10', 10);
             const limit = Number.isFinite(requested) ? Math.min(Math.max(requested, 1), 30) : 10;
 
             const [questionIssues, hashQuestionIssues] = await Promise.all([
@@ -92,7 +92,7 @@ jobs:
             const pr = context.payload.pull_request;
             const body = pr.body || '';
             const issueNumbers = [...body.matchAll(/\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)\b/gi)]
-              .map((match) => Number.parseInt(match[1], 10))
+              .map((match) => parseInt(match[1], 10))
               .filter((num) => Number.isInteger(num));
 
             if (issueNumbers.length === 0) {
