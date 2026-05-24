@@ -219,10 +219,14 @@ if $INIT_WIKI; then
     token=$(gh auth token)
 
     wiki_dir=$(mktemp -d)
-    trap 'rm -rf "$wiki_dir"' EXIT
+    trap 'rm -rf "$wiki_dir"; rm -f "$EXISTING_LABELS_FILE"' EXIT
 
-    clone_url="https://x-access-token:${token}@github.com/${REPO}.wiki.git"
-    git clone "$clone_url" "$wiki_dir"
+    clone_url="https://github.com/${REPO}.wiki.git"
+    GIT_ASKPASS_SCRIPT=$(mktemp)
+    printf '#!/bin/sh\necho "%s"\n' "$token" > "$GIT_ASKPASS_SCRIPT"
+    chmod +x "$GIT_ASKPASS_SCRIPT"
+    GIT_ASKPASS="$GIT_ASKPASS_SCRIPT" GIT_TERMINAL_PROMPT=0 git clone "$clone_url" "$wiki_dir"
+    rm -f "$GIT_ASKPASS_SCRIPT"
     cp "$wiki_source" "$wiki_dir/Home.md"
 
     if [[ -z "$(git -C "$wiki_dir" status --short)" ]]; then

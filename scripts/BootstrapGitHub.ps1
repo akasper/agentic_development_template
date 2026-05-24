@@ -217,8 +217,24 @@ if ($InitWiki) {
     $wikiDir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
     New-Item -ItemType Directory -Path $wikiDir | Out-Null
     try {
-        $cloneUrl = "https://x-access-token:${token}@github.com/${Repo}.wiki.git"
-        & git clone $cloneUrl $wikiDir
+        $cloneUrl = "https://github.com/${Repo}.wiki.git"
+        $askpassFile = Join-Path ([System.IO.Path]::GetTempPath()) ("git-askpass-" + [System.IO.Path]::GetRandomFileName())
+        try {
+            if ($env:OS -eq "Windows_NT") {
+                $askpassFile += ".cmd"
+                Set-Content -Path $askpassFile -Value "@echo off`r`necho $token" -NoNewline
+            } else {
+                Set-Content -Path $askpassFile -Value "#!/bin/sh`necho '$token'" -NoNewline
+                & chmod +x $askpassFile
+            }
+            $env:GIT_ASKPASS = $askpassFile
+            $env:GIT_TERMINAL_PROMPT = "0"
+            & git clone $cloneUrl $wikiDir
+        } finally {
+            Remove-Item $askpassFile -Force -ErrorAction SilentlyContinue
+            Remove-Item env:\GIT_ASKPASS -ErrorAction SilentlyContinue
+            Remove-Item env:\GIT_TERMINAL_PROMPT -ErrorAction SilentlyContinue
+        }
 
         Copy-Item $wikiSource -Destination (Join-Path $wikiDir "Home.md") -Force
 
