@@ -21,7 +21,11 @@ This repository is a **PLATE template**, not an application codebase. The import
 - `.github\labels.yml`, `.github\ISSUE_TEMPLATE\`, and `.github\PULL_REQUEST_TEMPLATE.md` define the work intake and review metadata.
 - `.github\workflows\label-check.yml` enforces required issue and PR type labels.
 - `.github\workflows\pr-documentation-check.yml` enforces that `Feature` PRs update `CURRENT.md`.
+- `.github\workflows\pr-issue-link-check.yml` warns (and fails for `Feature`/`Bug` PRs) if the PR body contains no closing keyword (`Closes #N`).
+- `.github\workflows\auto-merge.yml` enables autonomous PR merging when `.github/AUTONOMOUS_MODE` is present and the PR carries the `auto-merge` label.
 - `.github\workflows\sync-wiki-on-merge.yml` runs only for merged `Feature` PRs on `main`, then copies scoped documentation sources into the GitHub wiki.
+- `docs\research\` stores committed artifacts for closed Research issues (see `docs\research\README.md`).
+- `docs\design\` stores committed artifacts for closed Design issues (see `docs\design\README.md`).
 
 Read those pieces together when making process changes. A change in one of them usually implies matching updates in the others.
 
@@ -29,11 +33,18 @@ Read those pieces together when making process changes. A change in one of them 
 
 - Treat repository artifacts as the source of durable truth. If behavior, process, or evidence changes, update the relevant artifact instead of relying on chat history.
 - If `AGENTS.md`, `.agentic\process.yml`, and the template files disagree, preserve the PLATE intent and keep them aligned.
-- Labels are stable process metadata, not casual tags. Use type labels (`Bug`, `Feature`, `Epic`, `Documentation`, `Research`, `Audit`, `Migration`) and prefixed labels (`Epic:`, `area:`, `risk:`, `need:`) according to the existing taxonomy. Do not introduce `priority:` or `status:` labels; those belong in GitHub Projects fields.
+- Labels are stable process metadata, not casual tags. Use type labels (`Bug`, `Feature`, `Epic`, `Documentation`, `Research`, `Design`, `Audit`, `Migration`) and prefixed labels (`Epic:`, `area:`, `risk:`, `need:`) according to the existing taxonomy. Do not introduce `priority:` or `status:` labels; those belong in GitHub Projects fields.
 - `Feature` issues must carry both the `Feature` label and a matching `Epic: short-name` label. Their issue template expects acceptance criteria, test expectations, and documentation impact.
 - `Bug` work should include a reproduction path or explicitly signal the gap with `need:reproduction`, plus a regression test plan.
-- Every PR must carry a type label. `Feature` PRs must update `CURRENT.md`; documentation-only changes should use the `Documentation` label instead of pretending to be product behavior changes.
-- When creating a pull request with GitHub CLI, include the type label directly in `gh pr create` with `--label <type>`. Do not rely on a separate `gh pr edit --add-label ...` step because interruptions can leave the PR unlabeled.
+- `Research` issues must close with a committed artifact in `docs/research/` or a `SPEC.md` update — not just an issue comment. See `docs/research/README.md`.
+- `Design` issues must close with a committed artifact in `docs/design/` or `docs/wiki/Features/`. See `docs/design/README.md`.
+- Every PR must carry a type label. When creating a pull request with GitHub CLI, include the type label directly in `gh pr create` with `--label <type>`. Do not rely on a separate `gh pr edit --add-label ...` step because interruptions can leave the PR unlabeled. `Feature` PRs must update `CURRENT.md`; documentation-only changes should use the `Documentation` label.
+- **Every PR that resolves a specific issue must include `Closes #N` (or `Fixes #N` / `Resolves #N`) in the PR body.** GitHub will then automatically close the linked issue on merge. The `pr-issue-link-check.yml` workflow warns (and fails for `Feature`/`Bug` PRs) if the closing keyword is absent.
+- PRs that do not resolve a tracked issue (chores, dependency bumps) should be labeled `no-issue` to silence the closing-keyword check.
+- **Autopilot doctrine:** Prefer many small PRs (≤ 10 files each) over one large PR. Each PR should have a single clear purpose and be independently revertable. Prefer squash merges. Post an epic summary comment when all child issues are resolved, then pause for human review before starting the next epic.
+- **Autonomous mode** is enabled when `.github/AUTONOMOUS_MODE` exists on the default branch. When active, agents may label eligible `risk:low` PRs `auto-merge` and call `gh pr merge --auto --squash` after `gh pr create`. Full eligibility rules in `AGENTS.md §Autonomous Mode`. Never use `auto-merge` on PRs touching `AGENTS.md`, `SPEC.md`, workflows, credentials, auth, payments, or public claims. Agents may never create or delete the `AUTONOMOUS_MODE` marker file themselves.
+- `.github\workflows\auto-merge.yml` enforces the marker file check as a second gate.
 - Prefer small, scoped documentation and wiki updates. The wiki sync workflow is intentionally conservative and currently treats `CURRENT.md`, `docs\wiki`, and `docs\features` as the sync inputs.
 - For newly generated repositories, start with `docs/bootstrap/new-repository-checklist.md` and run `scripts/bootstrap_github.sh` (macOS/Linux/WSL) or `scripts\BootstrapGitHub.ps1` (Windows) before making project-specific changes.
-- Do not weaken tests, documentation gates, or workflow checks to make a change pass. Human review and merge authority remain outside agent authority.
+- Do not weaken tests, documentation gates, or workflow checks to make a change pass. Human review and merge authority remain outside agent authority except as defined in `AGENTS.md §Autonomous Mode`.
+- **Before opening any Feature issue that depends on an external API**, verify that `SPEC.md §External Integrations` contains an entry for that API and confirm it is reachable. If API availability is uncertain, open a Research issue first.

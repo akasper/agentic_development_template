@@ -15,15 +15,23 @@ last_verified_commit: "pending-merge"
 |---|---|---|---|---|---|---|---|
 | Template process baseline | Implemented | — | #2 | Repository files and workflow scaffolds | `README.md`, `AGENTS.md` | Unreleased | 2026-05-24 |
 | New-repository GitHub bootstrap guidance and helper | Implemented | — | Pending merge | `scripts/bootstrap_github.sh`, `scripts/BootstrapGitHub.ps1`, updated template docs, and repository diff review | `README.md`, `docs/bootstrap/new-repository-checklist.md`, `.github/copilot-instructions.md` | Unreleased | 2026-05-24 |
+| Autonomous mode | Implemented | — | Pending | `AGENTS.md §Autonomous Mode`, `auto-merge.yml`, `.github/AUTONOMOUS_MODE` marker | `AGENTS.md`, `CURRENT.md` | Unreleased | 2026-05-24 |
+| Autopilot doctrine | Implemented | — | Pending | `AGENTS.md §Autopilot Doctrine`, `copilot-instructions.md` | `AGENTS.md` | Unreleased | 2026-05-24 |
+| Issue artifact rules | Implemented | — | Pending | `AGENTS.md §Issue Artifact Rules`, `docs/research/`, `docs/design/` | `AGENTS.md` | Unreleased | 2026-05-24 |
+| Design issue type | Implemented | — | Pending | `labels.yml`, `.github/ISSUE_TEMPLATE/design.yml`, `label-check.yml` | `AGENTS.md §Label Rules` | Unreleased | 2026-05-24 |
+| PR issue-link check | Implemented | — | Pending | `.github/workflows/pr-issue-link-check.yml` | `AGENTS.md §Prohibited Actions`, `PULL_REQUEST_TEMPLATE.md` | Unreleased | 2026-05-24 |
 
 ## Operational Behavior
 
 | Area | Current Behavior | Evidence | Open Risk |
 |---|---|---|---|
 | Repository bootstrap | Generated repositories now have documented and scriptable guidance for syncing labels, updating CODEOWNERS, initializing the wiki, enabling delete-branch-on-merge, and applying baseline branch protection. Wiki initialization is opt-in. Auth tokens are not embedded in clone URLs to avoid credential leakage on failure. Temp-file cleanup handles both label-file and wiki-dir resources. Label lookups use fixed-string comparison (awk) to handle names containing regex metacharacters. PowerShell wiki clone checks `$LASTEXITCODE` to fail fast when the wiki is not enabled. | `scripts/bootstrap_github.sh`, `scripts/BootstrapGitHub.ps1`, `docs/bootstrap/new-repository-checklist.md`, `README.md` | Human decisions are still required for final branch protection policy, project fields, and real epic labels. |
-| Issue typing | Issues are expected to carry exactly one PLATE issue type label. | `.github/workflows/label-check.yml` | Requires labels to be applied in each new repository. |
+| Issue typing | Issues are expected to carry exactly one PLATE issue type label (`Bug`, `Feature`, `Epic`, `Research`, `Design`, `Audit`, `Migration`). | `.github/workflows/label-check.yml` | Requires labels to be applied in each new repository. |
 | Feature documentation gate | Feature PRs must modify `CURRENT.md`. | `.github/workflows/pr-documentation-check.yml` | Requires branch protection to make the check mandatory. |
+| PR issue-link check | PRs that resolve issues must include a closing keyword (`Closes #N`). Feature/Bug PRs fail CI without it; other types receive a warning. PRs labeled `no-issue` are exempt. | `.github/workflows/pr-issue-link-check.yml` | Soft warning for non-Feature/Bug types; relies on agent compliance for those. |
+| Issue artifact requirement | Research, Design, Audit, and Migration issues must close with a committed artifact (see `AGENTS.md §Issue Artifact Rules`). | `AGENTS.md`, `docs/research/README.md`, `docs/design/README.md` | No automated enforcement on issue close; relies on PR content review. |
 | Wiki synchronization | Disabled by default and opt-in through repository configuration. | `.github/workflows/sync-wiki-on-merge.yml` | Requires `WIKI_TOKEN` and human approval before enabling writes. |
+| Autonomous mode | Disabled by default. Create `.github/AUTONOMOUS_MODE` to enable; delete it to disable. When active, agents may auto-merge eligible `risk:low` PRs labeled `auto-merge`. | `.github/workflows/auto-merge.yml`, `AGENTS.md §Autonomous Mode` | Requires `allow_auto_merge: true` and Actions write permissions (`default_workflow_permissions=write`) on the repository. |
 
 ## Known Gaps
 

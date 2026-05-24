@@ -39,3 +39,23 @@ body:
       description: Specify whether this should produce an ADR, SPEC update, implementation issue, prototype, or recommendation.
     validations:
       required: true
+  - type: textarea
+    id: git_artifact
+    attributes:
+      label: Required git artifact
+      description: |
+        Research issues must close with a committed finding. Where will the research output be committed?
+        Examples:
+        - `docs/research/<issue-slug>.md` — findings and recommendation
+        - Update to `SPEC.md §Open Questions` or `SPEC.md §External Integrations`
+        - `docs/adr/NNNN-<slug>.md` — architecture decision record
+      placeholder: "docs/research/culturebot-api-availability.md"
+    validations:
+      required: true
+  - type: checkboxes
+    id: closing
+    attributes:
+      label: Closing requirements
+      options:
+        - label: "This issue will be closed via a Documentation PR with `Closes #N` in the body."
+          required: true

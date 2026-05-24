@@ -15,21 +15,130 @@ The PLATE book explains doctrine and the reasons behind the method. This reposit
 | Process | Follow PLATE rules, detect drift, and suggest process improvements. | Changing required gates, weakening checks, changing merge policy, or adopting new required automation. |
 | Documentation | Update `CURRENT.md`, wiki source pages, release notes, audit notes, and traceability records. | Approving claims that affect customers, pricing, legal posture, security posture, or roadmap promises. |
 
+## Autopilot Doctrine
+
+PLATE defaults to an **autopilot posture**: agents should proceed autonomously through a task queue and pause only at defined human checkpoints, rather than asking permission at each step. This posture is only safe when work is structured so that any step can be cheaply reviewed and reversed.
+
+**Atomic PR discipline.** Structure every session as a sequence of small, independently revertable PRs. A PR should have a single clear purpose. Soft limit: ≤ 10 changed files for implementation work. Prefer many small PRs over one large one. If a branch grows beyond the soft limit, split it before opening the PR.
+
+**Easy revert as the norm.** Prefer squash merges (keeps history clean). Never push directly to `main`. Name branches `type/short-description`. Each squash commit on `main` should read as a complete, stand-alone unit of work.
+
+**Resource consciousness.** Prefer targeted tool calls over exhaustive scans. Batch parallel reads. Stop investigating after sufficient evidence — do not read every file if you already know the answer. Avoid repeatedly regenerating content that has not changed.
+
+**Human checkpoints.** Post a summary comment on the Epic issue when all child issues are resolved. At that point, stop and let the human review before starting the next epic. Do not start a new epic autonomously without instruction.
+
+**Pacing.** Do not create more than five open PRs simultaneously unless they are all marked `auto-merge` and eligible. Sequence work to minimize merge conflicts; prefer additive-first ordering.
+
+**Autonomous mode** (see §Autonomous Mode below) is the formal toggle for the self-merge aspect of this doctrine. The pacing and PR-discipline rules apply in both modes.
+
 ## Required Work Loop
 
-For a normal Feature task, follow this loop.
+Follow the loop that matches the issue type.
+
+**Feature**
 
 | Step | Required Behavior |
 |---|---|
-| 1 | Confirm the issue is labeled `Feature` and has exactly one relevant `Epic: short-name` label. |
+| 1 | Confirm the issue is labeled `Feature` and has exactly one `Epic: short-name` label. |
 | 2 | Identify acceptance criteria, expected tests, documentation impact, and risk. |
 | 3 | Add or update tests before or alongside implementation. |
 | 4 | Implement the smallest coherent change that satisfies the issue. |
 | 5 | Update `CURRENT.md` to describe the implemented behavior and verification evidence. |
-| 6 | Open a pull request labeled `Feature` and complete the PR template. When using GitHub CLI, apply the type label in the `gh pr create` command itself rather than relying on a later edit step. |
-| 7 | Leave wiki-sync context, release-note context, and audit evidence for the human reviewer and post-merge workflows. |
+| 6 | Open a PR labeled `Feature` with `Closes #N` in the body. Complete the PR template. When using GitHub CLI, apply the type label in the `gh pr create` command itself rather than relying on a later edit step. |
+| 7 | Leave wiki-sync, release-note, and audit evidence for the human reviewer and post-merge workflows. |
 
-For a Bug task, reproduce the failure or document why reproduction is not yet possible, add regression coverage, and label missing information with `need:reproduction`, `need:tests`, or `need:human-review` as appropriate.
+**Bug**
+
+Reproduce the failure or document why reproduction is not yet possible. Add a regression test. Include `Closes #N` in the PR body. Label missing information with `need:reproduction`, `need:tests`, or `need:human-review`.
+
+**Research**
+
+| Step | Required Behavior |
+|---|---|
+| 1 | Confirm the research question, options, decision criteria, and required output are clear. |
+| 2 | Gather evidence. Prefer authoritative primary sources; document your search path. |
+| 3 | Commit findings to `docs/research/<issue-slug>.md` (see `docs/research/README.md` for format). |
+| 4 | If the findings change product intent, also update the relevant section of `SPEC.md`. |
+| 5 | Open a Documentation PR with `Closes #N` in the body. |
+| 6 | Post a summary comment on the issue before closing it. |
+
+**Design**
+
+| Step | Required Behavior |
+|---|---|
+| 1 | Confirm scope, constraints, and the feature or system being designed. |
+| 2 | Produce a design artifact (wireframes, API contract, data model, architecture diagram, decision record). |
+| 3 | Commit the artifact to `docs/design/<feature-slug>.md` or update `docs/wiki/Features/<feature>.md`. |
+| 4 | Open a Documentation PR with `Closes #N` in the body. |
+
+**Audit**
+
+Commit findings to `docs/audits/`. If drift is found, open a follow-up `Bug` or `Feature` issue per finding. Open a Documentation PR with `Closes #N` in the body.
+
+**Migration**
+
+Commit progress to `docs/migration/`. Update completion status in `docs/migration/completion-report.md`. Open a Documentation PR with `Closes #N` in the body.
+
+## Issue Artifact Rules
+
+Every issue must close with a traceable git artifact — either a code change in a PR or a documentation commit. Closing an issue without a corresponding PR is not permitted.
+
+| Issue Type | Required Git Artifact | Typical PR Type Label |
+|---|---|---|
+| `Feature` | Code change + `CURRENT.md` update | `Feature` |
+| `Bug` | Bug fix + regression test | `Bug` |
+| `Research` | Findings committed to `docs/research/<slug>.md` or `SPEC.md` update | `Documentation` |
+| `Design` | Artifact committed to `docs/design/<slug>.md` or `docs/wiki/Features/<feature>.md` | `Documentation` |
+| `Audit` | Report committed to `docs/audits/<slug>.md` | `Documentation` |
+| `Migration` | Update committed to `docs/migration/` | `Documentation` |
+| `Epic` | Wiki summary in `docs/wiki/` or epic comment summarizing child outcomes | `Documentation` |
+
+When GitHub's native closing keyword (`Closes #N`, `Fixes #N`, `Resolves #N`) is present in the PR body and the PR merges to the default branch, GitHub automatically closes the linked issue. **Always include a closing keyword in the PR body.** This is enforced by `.github/workflows/pr-issue-link-check.yml` (warning gate).
+
+## Autonomous Mode
+
+Autonomous mode is an opt-in operating posture for unattended sessions (overnight runs, long-running autopilot, `/delegate` tasks) where no human reviewer is available interactively. It selectively lifts the self-merge prohibition for lightweight, low-risk PRs.
+
+**Toggle:** Create `.github/AUTONOMOUS_MODE` on the default branch to enable. Delete it to return to normal human-in-the-loop operation. The file content is ignored; its presence is the signal.
+
+**When autonomous mode is active:**
+
+| Rule | Normal Mode | Autonomous Mode |
+|---|---|---|
+| Agent may merge own PRs | Never | Permitted for eligible `risk:low` PRs only |
+| Must wait for human merge | Always | May call `gh pr merge --auto --squash` on eligible PRs |
+| May add `auto-merge` label | No | Yes, for eligible PRs |
+
+**Eligibility criteria — all must be true for a PR to qualify:**
+
+- Labeled `risk:low`
+- Does not modify `AGENTS.md`, `SPEC.md`, `.github/CODEOWNERS`, or any workflow file
+- Does not add, remove, or alter credential handling, payment logic, authentication, or security controls
+- Does not carry `need:human-review` or `need:security-review`
+- Does not change public-facing claims in `README.md` or marketing documentation
+
+**How to auto-merge an eligible PR in autonomous mode:**
+
+```bash
+gh pr create --label "risk:low" --label "auto-merge" [other required labels] ...
+gh pr merge --auto --squash <PR_NUMBER>
+```
+
+The `.github/workflows/auto-merge.yml` workflow also triggers on the `auto-merge` label and verifies the marker file before proceeding — providing a second gate.
+
+**GitHub settings required** (one-time per repository):
+
+```bash
+# Allow the repo to use auto-merge
+gh api -X PATCH repos/OWNER/REPO -f allow_auto_merge=true
+
+# Allow Actions to write PRs and contents (needed by the workflow)
+gh api -X PUT repos/OWNER/REPO/actions/permissions/workflow \
+  -f default_workflow_permissions=write \
+  -F can_approve_pull_request_reviews=false
+```
+
+**Security posture:** Autonomous mode intentionally cannot self-escalate. An agent operating in autonomous mode may not create, modify, or delete `.github/AUTONOMOUS_MODE` itself, and may not relax branch protection rules or modify the eligibility criteria in this file.
 
 ## Label Rules
 
@@ -37,7 +146,7 @@ Use labels as stable process metadata. Do not create ad hoc labels unless they c
 
 | Label Family | Usage |
 |---|---|
-| `Bug`, `Feature`, `Epic`, `Research`, `Audit`, `Migration` | Exactly one required issue type label. |
+| `Bug`, `Feature`, `Epic`, `Research`, `Design`, `Audit`, `Migration` | Exactly one required issue type label. |
 | `Bug`, `Feature`, `Documentation` | Exactly one required pull request type label. |
 | `Epic: short-name` | Epic identity and feature grouping. Required on Epic and Feature issues. |
 | `area:*` | Stable subsystem or ownership area. |
@@ -46,7 +155,9 @@ Use labels as stable process metadata. Do not create ad hoc labels unless they c
 
 ## Documentation Rules
 
-Every Feature pull request must modify `CURRENT.md`. Documentation pull requests should explain whether they update process artifacts, product documentation, wiki source material, or public-facing claims. If a change affects feature behavior, update both implementation evidence and documentation evidence.
+Every Feature pull request must modify `CURRENT.md`. Documentation pull requests must commit a file to the appropriate `docs/` subdirectory and should explain whether they update process artifacts, product documentation, wiki source material, or public-facing claims. If a change affects feature behavior, update both implementation evidence and documentation evidence.
+
+See §Issue Artifact Rules for the full mapping of issue type to required artifact location.
 
 When opening pull requests through GitHub CLI, prefer an atomic command such as `gh pr create --label Feature` or `gh pr create --label Documentation`. Do not assume a follow-up `gh pr edit --add-label ...` step will always happen.
 
@@ -60,4 +171,4 @@ Escalate to a human when product intent is ambiguous, acceptance criteria confli
 
 ## Prohibited Actions
 
-Agents must not merge their own pull requests, bypass required checks, remove documentation gates, weaken tests to pass CI, fabricate test results, silently rewrite product intent, expose secrets, enable write automation without approval, or treat chat history as more authoritative than repository artifacts.
+Agents must not merge their own pull requests **unless autonomous mode is active (`.github/AUTONOMOUS_MODE` present on the default branch) and the PR meets all eligibility criteria in §Autonomous Mode above**. Agents must not bypass required checks, remove documentation gates, weaken tests to pass CI, fabricate test results, silently rewrite product intent, expose secrets, enable write automation without approval, create or delete `.github/AUTONOMOUS_MODE` themselves, or treat chat history as more authoritative than repository artifacts. Agents must not close an issue without a corresponding PR that carries a `Closes #N` reference in its body. Agents must not open a PR that resolves a specific issue without including `Closes #N`, `Fixes #N`, or `Resolves #N` in the PR body.

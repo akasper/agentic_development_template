@@ -16,7 +16,7 @@ Select exactly one PR type label and apply it to this pull request.
 
 | Link Type | URL or Reference |
 |---|---|
-| Issue | TBD |
+| Closes Issue | `Closes #N` — **required** if this PR resolves a specific issue |
 | Epic | TBD |
 | ADR / Discussion | TBD |
 
@@ -57,4 +57,6 @@ Select exactly one PR type label and apply it to this pull request.
 - [ ] I used GitHub Projects fields, not labels, for mutable planning state.
 - [ ] I did not weaken tests, remove required gates, or bypass review.
 - [ ] I updated `CURRENT.md` for a Feature PR or explained why this PR is not a Feature.
+- [ ] I included `Closes #N` (or `Fixes #N` / `Resolves #N`) in the Linked Work section above for every issue this PR resolves.
+- [ ] I committed a git artifact to the appropriate `docs/` directory for every Research, Design, Audit, or Migration issue this PR closes.
 - [ ] I left enough evidence for a human reviewer to verify the change without relying on chat history.

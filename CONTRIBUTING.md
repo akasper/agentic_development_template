@@ -4,7 +4,7 @@ This repository uses PLATE to keep human judgment, agent execution, and durable 
 
 ## Issue Rules
 
-Every issue must carry exactly one issue type label: `Bug`, `Feature`, `Epic`, `Research`, `Audit`, or `Migration`. Feature and Epic issues must also carry exactly one `Epic: short-name` label. Mutable planning state such as status, priority, target date, owner, iteration, and release target belongs in GitHub Projects fields.
+Every issue must carry exactly one issue type label: `Bug`, `Feature`, `Epic`, `Research`, `Design`, `Audit`, or `Migration`. Feature and Epic issues must also carry exactly one `Epic: short-name` label. Mutable planning state such as status, priority, target date, owner, iteration, and release target belongs in GitHub Projects fields.
 
 ## Branch and Pull Request Rules
 
