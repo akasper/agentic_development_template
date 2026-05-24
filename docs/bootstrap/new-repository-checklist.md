@@ -4,13 +4,19 @@ Use this checklist immediately after creating a repository from the PLATE templa
 
 ## Fast Path
 
-From the generated repository root, run:
+From the generated repository root, choose the script for your operating system:
 
+**macOS / Linux / WSL (bash):**
 ```bash
-python scripts/bootstrap_github.py --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main --init-wiki
+bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main --init-wiki
 ```
 
-That command is intended to cover the repeatable GitHub bootstrap work that otherwise gets missed in brand-new repositories.
+**Windows (PowerShell):**
+```powershell
+.\scripts\BootstrapGitHub.ps1 -Repo OWNER/REPO -LocalRepo . -OwnerHandle @your-handle -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main -InitWiki
+```
+
+Both scripts require only `gh` (GitHub CLI) and `git`. They cover the repeatable GitHub bootstrap work that otherwise gets missed in brand-new repositories.
 
 ## Automatable Steps
 
@@ -20,8 +26,8 @@ That command is intended to cover the repeatable GitHub bootstrap work that othe
 | Remove conflicting default GitHub labels | Default labels such as `documentation` and `enhancement` create drift from the canonical PLATE taxonomy. | Yes |
 | Replace `@PLATE_REPO_OWNER` in `.github/CODEOWNERS` | Placeholder owners break review routing and code-owner protection. | Yes |
 | Enable delete-branch-on-merge | Keeps the repository clean after reviewed work lands. | Yes |
-| Initialize the wiki from `docs/wiki/Home.md` | Prevents the GitHub wiki from starting empty when the repository-managed source already exists. | Yes, when `--init-wiki` is used |
-| Apply conservative baseline branch protection | Provides immediate protection against force-pushes and branch deletion while requiring conversation resolution. | Yes, when `--protect-branch main` is used |
+| Initialize the wiki from `docs/wiki/Home.md` | Prevents the GitHub wiki from starting empty when the repository-managed source already exists. | Yes, when `--init-wiki` / `-InitWiki` is passed |
+| Apply conservative baseline branch protection | Provides immediate protection against force-pushes and branch deletion while requiring conversation resolution. | Yes, when `--protect-branch BRANCH` / `-ProtectBranch BRANCH` is passed |
 
 ## Human Decisions Still Required
 

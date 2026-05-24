@@ -28,17 +28,23 @@ A PLATE repository gives a human project owner and an agent a shared operating e
 
 Create a new repository from this template, then complete the bootstrap checklist below. The first bootstrap pass should create labels, replace placeholders, configure repository settings, enable GitHub Projects for planning state, and initialize the wiki only if wiki synchronization will be used.
 
-For a faster and more repeatable setup, run the bootstrap helper from the generated repository root:
+For a faster and more repeatable setup, run the bootstrap helper from the generated repository root. Choose the script for your operating system:
 
+**macOS / Linux / WSL (bash):**
 ```bash
-python scripts/bootstrap_github.py --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main --init-wiki
+bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main --init-wiki
 ```
 
-That helper applies the canonical PLATE labels, removes conflicting default GitHub labels, updates `.github/CODEOWNERS`, optionally initializes the wiki from `docs/wiki/Home.md`, enables delete-branch-on-merge, and can apply a conservative baseline branch protection rule.
+**Windows (PowerShell):**
+```powershell
+.\scripts\BootstrapGitHub.ps1 -Repo OWNER/REPO -LocalRepo . -OwnerHandle @your-handle -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main -InitWiki
+```
+
+Both scripts apply the canonical PLATE labels, remove conflicting default GitHub labels, update `.github/CODEOWNERS`, optionally initialize the wiki from `docs/wiki/Home.md`, enable delete-branch-on-merge, and can apply a conservative baseline branch protection rule. They require only `gh` (GitHub CLI) and `git`.
 
 | Step | Action |
 |---|---|
-| 1 | Run `scripts/bootstrap_github.py` or complete the same actions manually. |
+| 1 | Run `scripts/bootstrap_github.sh` (macOS/Linux/WSL) or `scripts\BootstrapGitHub.ps1` (Windows), or complete the same actions manually. |
 | 2 | Replace `@PLATE_REPO_OWNER` in `.github/CODEOWNERS` with your GitHub username or team if you did not use the helper. |
 | 3 | Replace placeholder project language in `SPEC.md`, `CURRENT.md`, and public-facing docs. |
 | 4 | Review `AGENTS.md` and adjust allowed commands, escalation rules, and project-specific safety constraints. |

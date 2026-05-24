@@ -14,13 +14,13 @@ last_verified_commit: "pending-merge"
 | Feature | Status | Issue | Pull Request | Tests / Evidence | Wiki / Docs | Release | Last Verified |
 |---|---|---|---|---|---|---|---|
 | Template process baseline | Implemented | — | #2 | Repository files and workflow scaffolds | `README.md`, `AGENTS.md` | Unreleased | 2026-05-24 |
-| New-repository GitHub bootstrap guidance and helper | Implemented | — | Pending merge | `scripts/bootstrap_github.py`, updated template docs, and repository diff review | `README.md`, `docs/bootstrap/new-repository-checklist.md`, `.github/copilot-instructions.md` | Unreleased | 2026-05-24 |
+| New-repository GitHub bootstrap guidance and helper | Implemented | — | Pending merge | `scripts/bootstrap_github.sh`, `scripts/BootstrapGitHub.ps1`, updated template docs, and repository diff review | `README.md`, `docs/bootstrap/new-repository-checklist.md`, `.github/copilot-instructions.md` | Unreleased | 2026-05-24 |
 
 ## Operational Behavior
 
 | Area | Current Behavior | Evidence | Open Risk |
 |---|---|---|---|
-| Repository bootstrap | Generated repositories now have documented and scriptable guidance for syncing labels, updating CODEOWNERS, initializing the wiki, enabling delete-branch-on-merge, and applying baseline branch protection. | `scripts/bootstrap_github.py`, `docs/bootstrap/new-repository-checklist.md`, `README.md` | Human decisions are still required for final branch protection policy, project fields, and real epic labels. |
+| Repository bootstrap | Generated repositories now have documented and scriptable guidance for syncing labels, updating CODEOWNERS, initializing the wiki, enabling delete-branch-on-merge, and applying baseline branch protection. | `scripts/bootstrap_github.sh`, `scripts/BootstrapGitHub.ps1`, `docs/bootstrap/new-repository-checklist.md`, `README.md` | Human decisions are still required for final branch protection policy, project fields, and real epic labels. |
 | Issue typing | Issues are expected to carry exactly one PLATE issue type label. | `.github/workflows/label-check.yml` | Requires labels to be applied in each new repository. |
 | Feature documentation gate | Feature PRs must modify `CURRENT.md`. | `.github/workflows/pr-documentation-check.yml` | Requires branch protection to make the check mandatory. |
 | Wiki synchronization | Disabled by default and opt-in through repository configuration. | `.github/workflows/sync-wiki-on-merge.yml` | Requires `WIKI_TOKEN` and human approval before enabling writes. |
