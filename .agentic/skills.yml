@@ -9,6 +9,7 @@ skills_registry:
       - "secret or permission changes"
       - "workflow gate weakening"
     evidence_required: true
+    issue_closure_usage_report_required: true
 
 skills:
   - id: "implementation"
@@ -23,6 +24,7 @@ skills:
       - "linked issue"
       - "tests run"
       - "CURRENT.md update for Feature PRs"
+      - "closing issue comment includes structured === USAGE REPORT === block"
     prohibited_actions:
       - "merge own pull request"
       - "weaken tests to pass CI"
@@ -51,6 +53,7 @@ skills:
       - "answer summary"
       - "artifact updates"
       - "workflow trigger evidence"
+      - "closing issue comment includes structured === USAGE REPORT === block"
   - id: "audit"
     description: "Detect drift among SPEC, CURRENT, tests, issues, wiki, workflows, labels, and public claims."
     allowed_artifacts:
