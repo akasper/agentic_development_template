@@ -33,6 +33,7 @@ Read those pieces together when making process changes. A change in one of them 
 - `Feature` issues must carry both the `Feature` label and a matching `Epic: short-name` label. Their issue template expects acceptance criteria, test expectations, and documentation impact.
 - `Bug` work should include a reproduction path or explicitly signal the gap with `need:reproduction`, plus a regression test plan.
 - Every PR must carry a type label. `Feature` PRs must update `CURRENT.md`; documentation-only changes should use the `Documentation` label instead of pretending to be product behavior changes.
+- When creating a pull request with GitHub CLI, include the type label directly in `gh pr create` with `--label <type>`. Do not rely on a separate `gh pr edit --add-label ...` step because interruptions can leave the PR unlabeled.
 - Prefer small, scoped documentation and wiki updates. The wiki sync workflow is intentionally conservative and currently treats `CURRENT.md`, `docs\wiki`, and `docs\features` as the sync inputs.
 - For newly generated repositories, start with `docs/bootstrap/new-repository-checklist.md` and `scripts/bootstrap_github.py` before making project-specific changes.
 - Do not weaken tests, documentation gates, or workflow checks to make a change pass. Human review and merge authority remain outside agent authority.
