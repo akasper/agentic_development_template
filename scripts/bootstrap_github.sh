@@ -121,7 +121,7 @@ while IFS='|' read -r label_name label_color label_desc; do
     label_lower=$(echo "$label_name" | tr '[:upper:]' '[:lower:]')
 
     # Find the actual existing name (case-insensitive lookup).
-    actual_name=$(grep "^${label_lower}|" "$EXISTING_LABELS_FILE" | head -1 | cut -d'|' -f2- || true)
+    actual_name=$(awk -F'|' -v target="$label_lower" '$1 == target {print substr($0, index($0, "|")+1); exit}' "$EXISTING_LABELS_FILE")
 
     if [[ -n "$actual_name" ]]; then
         gh label edit "$actual_name" \
@@ -151,7 +151,7 @@ if $REMOVE_DEFAULT_LABELS; then
             continue
         fi
         # Only delete if the label actually exists in the repository.
-        actual_name=$(grep "^${default_label}|" "$EXISTING_LABELS_FILE" | head -1 | cut -d'|' -f2- || true)
+        actual_name=$(awk -F'|' -v target="$default_label" '$1 == target {print substr($0, index($0, "|")+1); exit}' "$EXISTING_LABELS_FILE")
         if [[ -n "$actual_name" ]]; then
             gh label delete "$actual_name" --repo "$REPO" --yes
         fi
