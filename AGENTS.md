@@ -190,6 +190,8 @@ When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR, the `
 
 `Feedback Response` issues and PRs are PLATES process artifacts — they are exempt from the `Epic:` label requirement and from the `CURRENT.md` update requirement. They do require a closing issue link (`Closes #N`) because the task issue is always present. The Copilot Coding Agent is reliably triggered by issue assignment via `GITHUB_TOKEN` (a fully GitHub-native, PAT-free path). The `@copilot` mention-in-comment path is blocked for `github-actions[bot]` comments by GitHub's bot-isolation routing and should not be used for machine-to-machine invocation.
 
+**Deduplication:** The workflow posts a tracking comment containing the marker `<!-- plates-feedback-trigger:<agent> -->` on the PR after each trigger. A 10-minute cooldown prevents duplicate task issues when a single review fires multiple parallel events.
+
 **Configuration:** Set the `PLATE_PR_FEEDBACK_AGENTS` repository variable to a comma-separated list of GitHub logins whose feedback should be auto-addressed (e.g., `devin-ai-integration[bot],openhands-agent`). When the variable is absent, the workflow matches common agent login patterns automatically.
 
 ## Label Rules
