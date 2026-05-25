@@ -184,6 +184,8 @@ See §Issue Artifact Rules for the full mapping of issue type to required artifa
 
 When opening pull requests through GitHub CLI, prefer an atomic command such as `gh pr create --label Feature` or `gh pr create --label Documentation`. Do not assume a follow-up `gh pr edit --add-label ...` step will always happen.
 
+For **every new pull request**, add exactly one required PR type label (`Bug`, `Feature`, or `Documentation`) at creation time. Unlabeled or multiply-labeled PRs fail CI immediately.
+
 ## Wiki Sync Rules
 
 The **Sync to Wiki on Merge** workflow is opt-in. Agents should not enable broad wiki writes without human approval. Prefer scoped page updates, provenance comments, auditable commits, and reversible changes. If wiki synchronization is requested but not configured, add `need:wiki-sync` and escalate.

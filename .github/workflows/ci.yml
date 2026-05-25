@@ -1,7 +1,49 @@
 name: CI
-on: [pull_request]
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
+  labels:
+    name: Labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR type label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prTypeLabels = ['Bug', 'Feature', 'Documentation'];
+            const forbiddenPlanningLabels = ['status:', 'priority:'];
+            const target = context.payload.pull_request;
+
+            if (!target) {
+              core.setFailed('No pull request payload found.');
+              return;
+            }
+
+            const labels = (target.labels || []).map((label) => typeof label === 'string' ? label : label.name);
+            const matches = labels.filter((label) => prTypeLabels.includes(label));
+            const forbidden = labels.filter((label) => forbiddenPlanningLabels.some((prefix) => label.startsWith(prefix)));
+            core.info(`Labels: ${labels.join(', ') || '(none)'}`);
+
+            if (forbidden.length > 0) {
+              core.setFailed(`Pull requests must not use planning labels: ${forbidden.join(', ')}.`);
+              return;
+            }
+
+            if (matches.length !== 1) {
+              core.setFailed(`Pull requests must have exactly one PR type label: ${prTypeLabels.join(', ')}. Found: ${matches.join(', ') || '(none)'}.`);
+              return;
+            }
+
+            core.info('PR label rules passed.');
+
   test:
+    needs: labels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
