@@ -165,14 +165,22 @@ gh api -X PUT repos/OWNER/REPO/actions/permissions/workflow \
 
 ## Third-Party Agent Feedback
 
-When the `.github/workflows/plates-address-pr-feedback.yml` workflow posts a PLATES feedback trigger comment on a PR (identified by the `<!-- plates-feedback-trigger:@agent -->` marker), the receiving agent (GitHub Copilot) should:
+When the `.github/workflows/plates-address-pr-feedback.yml` workflow posts a PLATES feedback trigger comment on a PR (identified by the `<!-- plates-feedback-trigger:<agent> -->` marker), the receiving agent (GitHub Copilot) should:
 
 1. Fetch the full list of unresolved review comments and the overall review body from the named reviewer
-2. For each actionable item, push a code change or reply explaining why no change is needed
-3. For items requiring human judgment (credentials, architectural decisions, security changes), add `need:human-review` to the PR and leave a comment identifying what is blocked
-4. Push all changes and re-request review from the original reviewer when complete
+2. For any comment that includes a GitHub code suggestion (` ```suggestion ` block): apply it directly as a commit **unless** the suggestion introduces a bug or relies on a false assumption — if you skip a suggestion, reply to that thread explaining why
+3. For all other actionable comments: push a code change or reply explaining why no change is needed
+4. After addressing each comment (via code change, applied suggestion, or explanatory reply), resolve its review thread using the GitHub GraphQL `resolveReviewThread` mutation:
+   ```graphql
+   mutation { resolveReviewThread(input: { threadId: "THREAD_NODE_ID" }) { thread { isResolved } } }
+   ```
+   To find `THREAD_NODE_ID` for a given comment, query `repository.pullRequest.reviewThreads` and match on `comments.nodes.databaseId`.
+5. For items requiring human judgment (credentials, architectural decisions, security changes), add `need:human-review` to the PR and leave a comment identifying what is blocked
+6. Push all changes and re-request review from the original reviewer when complete
 
 **Configuration:** Set the `PLATE_PR_FEEDBACK_AGENTS` repository variable to a comma-separated list of GitHub logins whose feedback should be auto-addressed (e.g., `devin-ai-integration[bot],openhands-agent`). When the variable is absent, the workflow matches common agent login patterns automatically.
+
+**Setup:** Create a repository secret named `COPILOT_TRIGGER_PAT` containing a fine-grained PAT (`pull-requests: write`) owned by a human GitHub account. Without this secret, trigger comments are posted by `github-actions[bot]`, which GitHub does not route to the Copilot Coding Agent.
 
 ## Label Rules
 
