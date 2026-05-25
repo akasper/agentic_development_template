@@ -7,7 +7,7 @@ If your repository started from an older `plate_template` release and has local 
 <!-- PLATES-CORE:BEGIN keeping-your-fork-current -->
 Use this sync flow:
 
-1. Fetch upstream template updates and review diffs for `AGENTS.md`, `.agentic/skills.yml`, `CURRENT.md`, and relevant workflows.
+1. Fetch upstream template updates (`git fetch upstream`) and review diffs for `AGENTS.md`, `.agentic/skills.yml`, `CURRENT.md`, and workflows in `.github/workflows/` that contain `PLATES-CORE` markers.
 2. Import only upstream-owned `PLATES-CORE` sections into your customized files.
 3. Preserve local sections outside those markers.
 4. Open an atomic PR with the correct PR type label and issue linkage (`Closes #N` when applicable).

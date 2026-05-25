@@ -189,7 +189,15 @@ For **every new pull request**, add exactly one required PR type label (`Bug`, `
 ## Upstream PLATE Template Synchronization
 
 <!-- PLATES-CORE:BEGIN upstream-template-sync -->
-Downstream PLATE repositories often customize baseline files such as `AGENTS.md`, `.agentic/skills.yml`, and workflow definitions. Do not overwrite those files wholesale during upgrades from `akasper/plate_template`.
+Downstream PLATE repositories often customize baseline files such as `AGENTS.md`, `.agentic/skills.yml`, and workflow definitions. Sync from the canonical upstream template repository `akasper/plate_template`.
+
+If needed, configure the upstream remote first:
+
+```bash
+git remote add upstream https://github.com/akasper/plate_template.git
+```
+
+Do not overwrite these files wholesale during upgrades.
 
 Use **sectional synchronization** for core behavior updates:
 
