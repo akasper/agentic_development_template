@@ -25,6 +25,7 @@ This repository is a **PLATE template**, not an application codebase. The import
 - `.github\workflows\question-handling.yml` supports `/question-batch` issue-comment triage and ensures PRs closing `Question` issues update `AGENTS.md` and `.agentic/skills.yml`.
 - `.github\workflows\auto-merge.yml` enables autonomous PR merging when `.github/AUTONOMOUS_MODE` is present and the PR carries the `auto-merge` label.
 - `.github\workflows\sync-wiki-on-merge.yml` runs only for merged `Feature` PRs on `main`, then copies scoped documentation sources into the GitHub wiki.
+- `.github\agents\` contains custom Copilot agent definitions (`.agent.md` files) that appear in the agent picker for all collaborators. See `docs\research\custom-agent-packaging.md` for the packaging pattern.
 - `docs\research\` stores committed artifacts for closed Research issues (see `docs\research\README.md`).
 - `docs\design\` stores committed artifacts for closed Design issues (see `docs\design\README.md`).
 

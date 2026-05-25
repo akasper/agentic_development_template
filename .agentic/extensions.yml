@@ -49,3 +49,13 @@ extensions:
     default_enabled: true
     human_approval_required: false
     rollback: "Revert the question-handling workflow/template/scripts and remove the Question label from active use."
+  - id: "custom-agents"
+    status: "available"
+    description: "Packages custom Copilot agents as .agent.md files in .github/agents/ for team-wide AI assistants."
+    artifacts:
+      - ".github/agents/*.agent.md"
+      - ".agentic/skills.yml"
+      - "docs/research/custom-agent-packaging.md"
+    default_enabled: true
+    human_approval_required: false
+    rollback: "Remove .github/agents/ directory. Agents will no longer appear in Copilot agent picker."

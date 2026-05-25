@@ -23,6 +23,7 @@ last_verified_commit: "pending-merge"
 | PR issue-link check | Implemented | — | Pending | `.github/workflows/pr-issue-link-check.yml` | `AGENTS.md §Prohibited Actions`, `PULL_REQUEST_TEMPLATE.md` | Unreleased | 2026-05-24 |
 | Upstream template synchronization guidance | Implemented | — | Pending | `AGENTS.md §Upstream PLATE Template Synchronization`, `.agentic/skills.yml template-sync`, `README.md §Keeping Your Fork Current` | `AGENTS.md`, `.agentic/skills.yml`, `README.md` | Unreleased | 2026-05-25 |
 | PR label enforcement — repair comments | Implemented | #20 | Pending | `label-check.yml` posts a repair comment on unlabeled PRs; PR template agent note; `copilot-instructions.md` covers both CLI and web/API label paths | `AGENTS.md §Documentation Rules`, `copilot-instructions.md` | Unreleased | 2026-05-25 |
+| Custom agent packaging | Implemented | #23 | Pending | `.github/agents/plate-configurator.agent.md`, `.agentic/extensions.yml`, `.agentic/skills.yml`, `docs/research/custom-agent-packaging.md` | `docs/research/custom-agent-packaging.md` | Unreleased | 2026-05-25 |
 
 ## Operational Behavior
 
