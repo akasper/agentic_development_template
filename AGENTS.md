@@ -186,6 +186,28 @@ When opening pull requests through GitHub CLI, prefer an atomic command such as 
 
 For **every new pull request**, add exactly one required PR type label (`Bug`, `Feature`, or `Documentation`) at creation time. Unlabeled or multiply-labeled PRs fail CI immediately.
 
+<!-- PLATE-CORE-START:agents.syncing-with-upstream -->
+## Syncing with Upstream PLATE Template
+
+Use the **PLATE Template Synchronization** skill (`.agentic/skills/plate-template-synchronization.md`) when importing upstream template changes into downstream repositories.
+
+### Core Rules
+
+1. **Never blind-overwrite customized files.** Downstream repositories are expected to customize `AGENTS.md`, `SPEC.md`, `.agentic/*`, `.github/workflows/*`, labels, and templates.
+2. **Track sync state in `.plate/upstream-ref`.** Read the previous synced commit before planning changes and update it only after validated sync changes are committed.
+3. **Fetch and diff upstream explicitly.** Use `https://github.com/akasper/plate_template` as upstream and compare `last_synced_commit..latest_upstream_commit` before editing local files.
+4. **Prefer section-level merges.** Where files contain PLATE-managed blocks, update only content inside markers such as `<!-- PLATE-CORE-START:* -->` / `<!-- PLATE-CORE-END:* -->`.
+5. **Preserve local policy outside managed blocks.** If intent conflicts are detected, keep local policy, add `need:human-review`, and document the conflict.
+6. **Produce a Documentation PR with migration notes.** Include source/target commit references, file-by-file rationale, and before/after snippets for each non-trivial merge.
+
+### PR Discipline for Template Sync
+
+- Keep sync PRs small and focused by area (for example: workflow-only, agent-guidance-only, labels-only).
+- Follow label doctrine in this repository: use exactly one required PR type label. For doc-only sync changes use `Documentation`; when behavior or executable automation changes, use `Feature`.
+- Update `CURRENT.md` when sync changes alter active behavior or operating rules.
+- Include a closing keyword (`Closes #N`) and evidence links per normal PLATE standards.
+<!-- PLATE-CORE-END:agents.syncing-with-upstream -->
+
 ## Wiki Sync Rules
 
 The **Sync to Wiki on Merge** workflow is opt-in. Agents should not enable broad wiki writes without human approval. Prefer scoped page updates, provenance comments, auditable commits, and reversible changes. If wiki synchronization is requested but not configured, add `need:wiki-sync` and escalate.

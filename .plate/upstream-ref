@@ -1,0 +1,5 @@
+upstream_repo=https://github.com/akasper/plate_template
+upstream_branch=main
+last_synced_commit=UNSET
+last_synced_at=UNSET
+notes=Set last_synced_commit after the first validated upstream sync PR is merged.

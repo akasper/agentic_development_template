@@ -74,3 +74,23 @@ skills:
       - "provenance summary"
       - "scoped file list"
     requires_human_enablement: true
+  - id: "plate-template-synchronization"
+    description: "Import upstream PLATE template updates while preserving downstream customizations."
+    allowed_artifacts:
+      - "AGENTS.md"
+      - "SPEC.md"
+      - ".agentic/**"
+      - ".github/workflows/**"
+      - ".github/labels.yml"
+      - ".plate/upstream-ref"
+      - "CURRENT.md"
+      - "docs/migration/**"
+      - "CHANGELOG.md"
+    required_evidence:
+      - "upstream source repository and commit range"
+      - "managed-block or targeted-merge strategy per changed file"
+      - "migration notes with before/after snippets"
+      - "exactly one required PR type label at PR creation"
+    prohibited_actions:
+      - "blindly overwrite customized downstream files"
+      - "update .plate/upstream-ref before sync validation is complete"

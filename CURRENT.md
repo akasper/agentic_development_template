@@ -21,6 +21,7 @@ last_verified_commit: "pending-merge"
 | Design issue type | Implemented | — | Pending | `labels.yml`, `.github/ISSUE_TEMPLATE/design.yml`, `label-check.yml` | `AGENTS.md §Label Rules` | Unreleased | 2026-05-24 |
 | Question issue handling | Implemented | #12 | Pending | `.github/ISSUE_TEMPLATE/question.yml`, `.github/workflows/question-handling.yml`, `scripts/question_batch.sh`, `scripts/QuestionBatch.ps1`, `label-check.yml` | `AGENTS.md §Question`, `.agentic/skills.yml`, `.agentic/extensions.yml` | Unreleased | 2026-05-24 |
 | PR issue-link check | Implemented | — | Pending | `.github/workflows/pr-issue-link-check.yml` | `AGENTS.md §Prohibited Actions`, `PULL_REQUEST_TEMPLATE.md` | Unreleased | 2026-05-24 |
+| Upstream PLATE template synchronization | Implemented | — | Pending | `AGENTS.md §Syncing with Upstream PLATE Template`, `.agentic/skills/plate-template-synchronization.md`, `.agentic/skills.yml`, `.plate/upstream-ref` | `CURRENT.md`, `CHANGELOG.md` | Unreleased | 2026-05-25 |
 
 ## Operational Behavior
 
@@ -34,6 +35,7 @@ last_verified_commit: "pending-merge"
 | Issue artifact requirement | Research, Design, Audit, and Migration issues must close with a committed artifact (see `AGENTS.md §Issue Artifact Rules`). | `AGENTS.md`, `docs/research/README.md`, `docs/design/README.md` | No automated enforcement on issue close; relies on PR content review. |
 | Wiki synchronization | Disabled by default and opt-in through repository configuration. | `.github/workflows/sync-wiki-on-merge.yml` | Requires `WIKI_TOKEN` and human approval before enabling writes. |
 | Autonomous mode | Disabled by default. Create `.github/AUTONOMOUS_MODE` to enable; delete it to disable. When active, agents may auto-merge eligible `risk:low` PRs labeled `auto-merge`. | `.github/workflows/auto-merge.yml`, `AGENTS.md §Autonomous Mode` | Requires `allow_auto_merge: true` and Actions write permissions (`default_workflow_permissions=write`) on the repository. |
+| Upstream template sync | Synchronization with `akasper/plate_template` is governed by a dedicated skill with commit-range tracking in `.plate/upstream-ref`, targeted merge strategies, and migration notes requirements to preserve local customization. | `AGENTS.md §Syncing with Upstream PLATE Template`, `.agentic/skills/plate-template-synchronization.md`, `.plate/upstream-ref` | Marker discipline is required for best section-level merges in heavily customized downstream files. |
 
 ## Known Gaps
 
