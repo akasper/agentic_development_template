@@ -201,6 +201,7 @@ Use labels as stable process metadata. Do not create ad hoc labels unless they c
 | `Bug`, `Feature`, `Epic`, `Research`, `Design`, `Question`, `Audit`, `Migration`, `Feedback Response` | Exactly one required issue type label. |
 | `Bug`, `Feature`, `Documentation`, `Feedback Response` | Exactly one required pull request type label. |
 | `Feedback Response` | Combined issue + PR type for PLATES-auto-generated feedback response tasks and any resulting PRs. Auto-created by `plates-address-pr-feedback.yml`. No `Epic:` label required. |
+| `Epic: short-name` | Epic identity and feature grouping. Required on Epic and Feature issues. |
 | `area:*` | Stable subsystem or ownership area. |
 | `risk:*` | Review burden and release caution. |
 | `need:*` | Missing input or required follow-up. |
