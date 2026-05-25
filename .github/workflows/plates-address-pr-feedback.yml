@@ -194,39 +194,86 @@ jobs:
               `**Feedback thread:** ${feedbackUrl}`,
             ].join('\n');
 
+            // Step 1: Ensure the 'Feedback Response' label exists.
+            // labels.yml sync may not have run yet (e.g., freshly-templated repo).
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: 'Feedback Response' });
+            } catch (labelErr) {
+              if (labelErr.status === 404) {
+                core.info("'Feedback Response' label not found; auto-creating it.");
+                try {
+                  await github.rest.issues.createLabel({
+                    owner, repo,
+                    name: 'Feedback Response',
+                    color: 'e4e669',
+                    description: 'PLATES-auto-generated feedback response task (issue or PR).',
+                  });
+                } catch (createLabelErr) {
+                  core.warning(`Could not create label: ${createLabelErr.message}`);
+                }
+              }
+            }
+
+            // Step 2: Create the issue WITHOUT assignees — adding an invalid assignee
+            // (e.g. copilot not enabled) causes a 422 that kills the whole create call.
             let issueNumber = null;
             try {
               const { data: issue } = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner, repo,
                 title: issueTitle,
                 body: issueBody,
                 labels: ['Feedback Response'],
-                assignees: ['copilot'],
               });
               issueNumber = issue.number;
-              core.info(`Created issue #${issueNumber} and assigned to copilot.`);
-            } catch (err) {
-              core.warning(`Failed to create or assign issue: ${err.message}. Falling back to PR comment.`);
+              core.info(`Created issue #${issueNumber}.`);
+            } catch (createErr) {
+              core.warning(`Failed to create task issue: ${createErr.message} (HTTP ${createErr.status ?? 'unknown'}). Falling back to PR comment.`);
             }
 
-            // Post a tracking comment on the PR — includes the MARKER for deduplication
-            // and links to the task issue (or surfaces the instructions if issue creation failed).
-            const commentBody = issueNumber
-              ? [
-                  MARKER,
-                  `🤖 **PLATES:** Created task issue #${issueNumber} and assigned to Copilot to address @${reviewer}'s feedback.`,
-                  `Track progress: [issue #${issueNumber}](https://github.com/${context.repo.owner}/${context.repo.repo}/issues/${issueNumber})`,
-                ].join('\n')
-              : [
-                  MARKER,
-                  `⚠️ **PLATES:** Could not create a task issue (Copilot may not be available as an assignee). Please manually assign @copilot to an issue or invoke it directly to address @${reviewer}'s feedback.`,
-                  `Feedback thread: ${feedbackUrl}`,
-                ].join('\n');
+            // Step 3: Assign copilot separately so a failure here doesn't lose the issue.
+            let copilotAssigned = false;
+            if (issueNumber) {
+              try {
+                // checkUserCanBeAssigned returns 204 if valid, 404 if not.
+                await github.rest.issues.checkUserCanBeAssigned({ owner, repo, assignee: 'copilot' });
+                await github.rest.issues.addAssignees({
+                  owner, repo,
+                  issue_number: issueNumber,
+                  assignees: ['copilot'],
+                });
+                copilotAssigned = true;
+                core.info(`Assigned issue #${issueNumber} to copilot Coding Agent.`);
+              } catch (assignErr) {
+                core.warning(`Could not assign copilot (Coding Agent may not be enabled for this repo — see Settings → Copilot → Coding Agent): ${assignErr.message}`);
+              }
+            }
+
+            // Post a tracking comment on the PR with MARKER for deduplication.
+            let commentBody;
+            if (issueNumber && copilotAssigned) {
+              commentBody = [
+                MARKER,
+                `🤖 **PLATES:** Created task issue #${issueNumber} and assigned to the Copilot Coding Agent to address @${reviewer}'s feedback.`,
+                `Track progress: [issue #${issueNumber}](https://github.com/${owner}/${repo}/issues/${issueNumber})`,
+              ].join('\n');
+            } else if (issueNumber) {
+              commentBody = [
+                MARKER,
+                `⚠️ **PLATES:** Created task issue #${issueNumber} but could not assign the Copilot Coding Agent (it may not be enabled for this repository).`,
+                `Please enable it under **Settings → Copilot → Coding Agent**, then manually assign [issue #${issueNumber}](https://github.com/${owner}/${repo}/issues/${issueNumber}) to \`@copilot\`.`,
+              ].join('\n');
+            } else {
+              commentBody = [
+                MARKER,
+                `⚠️ **PLATES:** Could not create a task issue to address @${reviewer}'s feedback. Check the [workflow run logs](https://github.com/${owner}/${repo}/actions) for details.`,
+                `Feedback thread: ${feedbackUrl}`,
+              ].join('\n');
+            }
 
             await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner, repo,
               issue_number: prNumber,
               body: commentBody,
             });
