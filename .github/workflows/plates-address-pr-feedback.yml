@@ -1,18 +1,15 @@
 name: PLATES Auto-Address PR Feedback
 
 # Fires when a third-party agent submits a PR review or leaves an inline
-# comment. If the sender matches a known agent list, posts a structured
-# @copilot invocation comment asking Copilot to address the feedback
-# autonomously. Human intervention is only requested when an item requires
-# judgment, credentials, or an architectural decision.
+# comment. If the sender matches a known agent list, creates a GitHub issue
+# describing the feedback and assigns it to copilot. The Copilot Coding Agent
+# then picks up the issue, pushes fixes to the existing PR branch, and closes
+# the issue — no PAT, no human impersonation, fully GITHUB_TOKEN-native.
 #
-# REQUIRED SETUP: Create a repository secret named COPILOT_TRIGGER_PAT
-# containing a fine-grained PAT (pull-requests: write) owned by a human
-# GitHub account. Comments posted by github-actions[bot] are not routed to
-# the Copilot Coding Agent by GitHub's notification system — only comments
-# from human accounts reliably invoke @copilot. Without this secret the
-# workflow falls back to github.token and logs a warning (the comment will
-# appear but may not trigger a Copilot session).
+# This approach uses GitHub's supported issue-assignment invocation path for
+# the Copilot Coding Agent rather than the fragile @mention-in-comment path,
+# which is blocked for github-actions[bot] comments by GitHub's bot-isolation
+# routing rules.
 
 on:
   pull_request_review:
@@ -23,6 +20,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: write
 
 jobs:
   address-feedback:
@@ -66,47 +64,55 @@ jobs:
             let reviewState = null;
             let feedbackUrl = null;
             let isBatchReview = false;
+            let prBranch = null;
+            let prTitle = null;
 
             if (context.eventName === 'pull_request_review') {
               const review = context.payload.review;
+              const pr = context.payload.pull_request;
               reviewer = review.user?.login;
               reviewState = (review.state || '').toLowerCase();
               feedbackUrl = review.html_url;
-              prNumber = context.payload.pull_request.number;
+              prNumber = pr.number;
+              prBranch = pr.head.ref;
+              prTitle = pr.title;
               isBatchReview = true;
 
               // An "approved" review with no body is a rubber stamp — nothing to act on
               if (reviewState === 'approved' && !review.body?.trim()) {
                 core.info(`Skipping approved review with no body from @${reviewer}.`);
-                core.setOutput('should_post', 'false');
+                core.setOutput('should_act', 'false');
                 return;
               }
             } else if (context.eventName === 'pull_request_review_comment') {
               const comment = context.payload.comment;
+              const pr = context.payload.pull_request;
               reviewer = comment.user?.login;
               feedbackUrl = comment.html_url;
-              prNumber = context.payload.pull_request.number;
+              prNumber = pr.number;
+              prBranch = pr.head.ref;
+              prTitle = pr.title;
               reviewState = 'commented';
               isBatchReview = false;
             }
 
             if (!reviewer || !prNumber) {
               core.info('Unable to determine reviewer or PR number; skipping.');
-              core.setOutput('should_post', 'false');
+              core.setOutput('should_act', 'false');
               return;
             }
 
             if (!isKnownAgent(reviewer)) {
               core.info(`@${reviewer} is not a known third-party agent; skipping.`);
-              core.setOutput('should_post', 'false');
+              core.setOutput('should_act', 'false');
               return;
             }
 
             core.info(`Detected feedback from known agent @${reviewer} on PR #${prNumber} (state: ${reviewState}, batch: ${isBatchReview}).`);
 
-            // Deduplication: avoid posting multiple trigger comments within a short
-            // window (e.g., when a review fires multiple comment events in quick
-            // succession, or when the workflow re-triggers due to PR sync).
+            // Deduplication: avoid creating multiple task issues within a short
+            // window when a single review fires several parallel events.
+            // We mark each issue creation with a tracking comment on the PR.
             const MARKER = `<!-- plates-feedback-trigger:${reviewer} -->`;
             const COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -125,8 +131,8 @@ jobs:
               : 0;
 
             if (Date.now() - latestTriggerAt < COOLDOWN_MS) {
-              core.info(`Trigger comment already posted within cooldown window for @${reviewer} on PR #${prNumber}; skipping.`);
-              core.setOutput('should_post', 'false');
+              core.info(`Agent task already created within cooldown window for @${reviewer} on PR #${prNumber}; skipping.`);
+              core.setOutput('should_act', 'false');
               return;
             }
 
@@ -136,62 +142,93 @@ jobs:
               approved: '✅ approved with notes',
             }[reviewState] || reviewState;
 
-            core.setOutput('should_post', 'true');
+            core.setOutput('should_act', 'true');
             core.setOutput('reviewer', reviewer);
             core.setOutput('pr_number', String(prNumber));
+            core.setOutput('pr_branch', prBranch);
+            core.setOutput('pr_title', prTitle || `PR #${prNumber}`);
             core.setOutput('feedback_url', feedbackUrl);
             core.setOutput('state_label', stateLabel);
             core.setOutput('marker', MARKER);
 
-      - name: Warn if COPILOT_TRIGGER_PAT is not configured
-        if: steps.detect.outputs.should_post == 'true'
-        shell: bash
-        run: |
-          if [ -z "$TRIGGER_PAT" ]; then
-            echo "::warning file=.github/workflows/plates-address-pr-feedback.yml::COPILOT_TRIGGER_PAT secret is not set. The @copilot mention will be posted by github-actions[bot], which GitHub does not route to the Copilot Coding Agent. Create a fine-grained PAT (pull-requests: write) owned by a human account and store it as the COPILOT_TRIGGER_PAT repository secret to enable reliable Copilot invocation."
-          fi
-        env:
-          TRIGGER_PAT: ${{ secrets.COPILOT_TRIGGER_PAT }}
-
-      - name: Post @copilot trigger comment
-        if: steps.detect.outputs.should_post == 'true'
+      - name: Create Copilot agent task issue
+        if: steps.detect.outputs.should_act == 'true'
         uses: actions/github-script@v7
         env:
           REVIEWER: ${{ steps.detect.outputs.reviewer }}
           PR_NUMBER: ${{ steps.detect.outputs.pr_number }}
+          PR_BRANCH: ${{ steps.detect.outputs.pr_branch }}
+          PR_TITLE: ${{ steps.detect.outputs.pr_title }}
           FEEDBACK_URL: ${{ steps.detect.outputs.feedback_url }}
           STATE_LABEL: ${{ steps.detect.outputs.state_label }}
           TRIGGER_MARKER: ${{ steps.detect.outputs.marker }}
         with:
-          github-token: ${{ secrets.COPILOT_TRIGGER_PAT || github.token }}
           script: |
             const reviewer = process.env.REVIEWER;
             const prNumber = parseInt(process.env.PR_NUMBER, 10);
+            const prBranch = process.env.PR_BRANCH;
+            const prTitle = process.env.PR_TITLE;
             const feedbackUrl = process.env.FEEDBACK_URL;
             const stateLabel = process.env.STATE_LABEL;
             const MARKER = process.env.TRIGGER_MARKER;
 
-            const body = [
-              MARKER,
-              `### PLATES: PR feedback from @${reviewer} (${stateLabel})`,
+            const prUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/pull/${prNumber}`;
+
+            const issueTitle = `[PLATES] Address @${reviewer} feedback on PR #${prNumber}`;
+            const issueBody = [
+              `> 🤖 Auto-generated by \`plates-address-pr-feedback.yml\`. Close this issue once the feedback is fully addressed.`,
               '',
-              `@copilot — @${reviewer} has left feedback on this PR. Per the PLATE autopilot doctrine, please address it autonomously:`,
+              `**@${reviewer}** (${stateLabel}) has left feedback on **[PR #${prNumber}: ${prTitle}](${prUrl})**.`,
               '',
-              '1. Review all open inline comments and the overall review body from @' + reviewer,
-              '2. For any comment that includes a GitHub code suggestion (` ```suggestion ` block): apply it directly as a commit **unless** the suggestion introduces a bug or relies on a false assumption — if you skip a suggestion, reply to that thread explaining why',
-              '3. For all other actionable comments: make the necessary code change or reply explaining why no change is needed',
-              '4. After addressing each comment (via code change, applied suggestion, or explanatory reply), resolve its review thread using the GitHub GraphQL `resolveReviewThread` mutation',
-              '5. If any item requires human judgment (API keys, architectural decisions, security changes, credential handling), add the `need:human-review` label to this PR and leave a comment identifying exactly what requires human input',
-              '6. Push any resulting code changes and re-request review when complete',
+              '**Instructions:**',
               '',
-              `Feedback thread: ${feedbackUrl}`,
+              `1. Review all open inline comments and the overall review body from @${reviewer} on PR #${prNumber}`,
+              `2. For any comment that includes a GitHub code suggestion (\` \`\`\`suggestion \` block): apply it directly as a commit **unless** the suggestion introduces a bug or relies on a false assumption — if you skip a suggestion, reply to that thread with a brief explanation`,
+              `3. For all other actionable comments: make the necessary code change or reply explaining why no change is needed`,
+              `4. After addressing each comment (via code change, applied suggestion, or explanatory reply), resolve its review thread using the GitHub GraphQL \`resolveReviewThread\` mutation`,
+              `5. **Push all changes to the existing branch \`${prBranch}\`** — do not open a new PR`,
+              `6. If you must open a new PR (e.g., the branch is protected), label it \`Feedback Response\` and include \`Closes #TASK_ISSUE_NUMBER\` in the PR body so CI passes and the task issue auto-closes on merge`,
+              `7. If any item requires human judgment (API keys, architectural decisions, security changes, credential handling), add the \`need:human-review\` label to PR #${prNumber} and leave a comment identifying exactly what requires human input`,
+              `8. Close this issue after all feedback is addressed and changes are pushed`,
+              '',
+              `**Feedback thread:** ${feedbackUrl}`,
             ].join('\n');
+
+            let issueNumber = null;
+            try {
+              const { data: issue } = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueTitle,
+                body: issueBody,
+                labels: ['Feedback Response'],
+                assignees: ['copilot'],
+              });
+              issueNumber = issue.number;
+              core.info(`Created issue #${issueNumber} and assigned to copilot.`);
+            } catch (err) {
+              core.warning(`Failed to create or assign issue: ${err.message}. Falling back to PR comment.`);
+            }
+
+            // Post a tracking comment on the PR — includes the MARKER for deduplication
+            // and links to the task issue (or surfaces the instructions if issue creation failed).
+            const commentBody = issueNumber
+              ? [
+                  MARKER,
+                  `🤖 **PLATES:** Created task issue #${issueNumber} and assigned to Copilot to address @${reviewer}'s feedback.`,
+                  `Track progress: [issue #${issueNumber}](https://github.com/${context.repo.owner}/${context.repo.repo}/issues/${issueNumber})`,
+                ].join('\n')
+              : [
+                  MARKER,
+                  `⚠️ **PLATES:** Could not create a task issue (Copilot may not be available as an assignee). Please manually assign @copilot to an issue or invoke it directly to address @${reviewer}'s feedback.`,
+                  `Feedback thread: ${feedbackUrl}`,
+                ].join('\n');
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
-              body,
+              body: commentBody,
             });
 
-            core.info(`@copilot trigger comment posted on PR #${prNumber}.`);
+            core.info(`Tracking comment posted on PR #${prNumber}.`);

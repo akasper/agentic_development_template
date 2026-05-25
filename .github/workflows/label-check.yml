@@ -16,7 +16,11 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const issueTypeLabels = ['Bug', 'Feature', 'Epic', 'Research', 'Design', 'Question', 'Audit', 'Migration'];
+            const issueTypeLabels = ['Bug', 'Feature', 'Epic', 'Research', 'Design', 'Question', 'Audit', 'Migration', 'Feedback Response'];
+            // Labels that require an Epic: short-name companion label
+            const requiresEpic = ['Feature', 'Epic'];
+            // Labels that are PLATES-auto-generated and exempt from the Epic requirement
+            // (they are ephemeral process artifacts, not tracked planning items)
             const issue = context.payload.issue;
 
             if (!issue) {
@@ -49,5 +53,8 @@ jobs:
               core.setFailed(`Epic issues must carry exactly one dedicated Epic: short-name label. Found: ${epicLabels.join(', ') || '(none)'}.`);
               return;
             }
+
+            // Feedback Response issues are PLATES-auto-generated process artifacts.
+            // They are exempt from the Epic requirement and close automatically when addressed.
 
             core.info('PLATE issue label rules passed.');
