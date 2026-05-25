@@ -58,4 +58,4 @@ extensions:
       - "docs/research/custom-agent-packaging.md"
     default_enabled: true
     human_approval_required: false
-    rollback: "Remove .github/agents/ directory. Agents will no longer appear in Copilot agent picker."
+    rollback: "Remove agent files added by this extension from .github/agents/ and their extension registry entry. Other custom agents added independently are unaffected."
