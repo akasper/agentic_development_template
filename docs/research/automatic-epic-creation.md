@@ -127,7 +127,7 @@ Rationale:
 1. PLATE is designed for agent-assisted development where Feature issues are created programmatically. Requiring manual Epic pre-creation blocks autonomous workflows.
 2. A naming convention regex (`/^Epic: [a-z0-9][a-z0-9-]{1,38}$/`) prevents most typo-driven sprawl.
 3. Stub Epic issues with `need:decision` labels surface in triage without blocking Feature work.
-4. The workflow is ~50 lines of `actions/github-script` and requires only `issues: write` permission (already granted to label-check).
+4. The workflow is ~50 lines of `actions/github-script` and requires `issues: write` permission (note: `label-check.yml` currently only has `issues: read`, so this is a permission escalation).
 5. Option A is infeasible for dynamic use because GitHub issue forms don't support API-driven dropdowns.
 
 ## Implementation Sketch (Option B)
