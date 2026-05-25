@@ -10,7 +10,7 @@ Every issue must carry exactly one issue type label: `Bug`, `Feature`, `Epic`, `
 
 Use short descriptive branch names such as `feature/onboarding-copy`, `bug/login-regression`, or `docs/current-state-audit`. Every pull request must carry exactly one PR type label: `Bug`, `Feature`, or `Documentation`. Feature PRs must update `CURRENT.md`.
 
-If a pull request is opened with GitHub CLI, include the type label in the create command itself, for example `gh pr create --label Feature`, instead of treating labeling as a separate best-effort follow-up step.
+If a pull request is opened with GitHub CLI, include the type label in the create command itself, for example `gh pr create --label "Feature"`, instead of treating labeling as a separate best-effort follow-up step.
 
 For batched Question triage through GitHub CLI, use `scripts/question_batch.sh` (or `scripts/QuestionBatch.ps1` on Windows) to list open Question issues quickly.
 
