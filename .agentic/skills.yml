@@ -74,6 +74,17 @@ skills:
       - "provenance summary"
       - "scoped file list"
     requires_human_enablement: true
+  - id: "custom-agents"
+    description: "Author and maintain custom Copilot agents (.agent.md files) for domain-specific AI assistance."
+    allowed_artifacts:
+      - ".github/agents/*.agent.md"
+      - ".agentic/extensions.yml"
+      - ".agentic/skills.yml"
+      - "docs/research/**"
+    required_evidence:
+      - "linked issue or extension request"
+      - "agent file with valid frontmatter"
+      - "extension registry entry"
   # PLATES-CORE:BEGIN template-sync-skill
   - id: "template-sync"
     description: "Import upstream PLATE template behavior changes while preserving downstream customizations."
