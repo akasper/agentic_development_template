@@ -24,6 +24,7 @@ This repository is a **PLATE template**, not an application codebase. The import
 - `.github\workflows\pr-issue-link-check.yml` warns (and fails for `Feature`/`Bug` PRs) if the PR body contains no closing keyword (`Closes #N`).
 - `.github\workflows\question-handling.yml` supports the `/question-batch` issue-comment slash command for triaging open Question issues.
 - `.github\workflows\auto-merge.yml` enables autonomous PR merging when `.github/AUTONOMOUS_MODE` is present and the PR carries the `auto-merge` label.
+- `.github\workflows\plates-address-pr-feedback.yml` monitors `pull_request_review` and `pull_request_review_comment` events. When a known third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR, it posts a structured `@copilot` invocation comment directing Copilot to address the feedback autonomously. Configure the agent list via the `PLATE_PR_FEEDBACK_AGENTS` repository variable (comma-separated logins); the workflow falls back to built-in pattern matching when the variable is absent.
 - `.github\workflows\sync-wiki-on-merge.yml` runs only for merged `Feature` PRs on `main`, then copies scoped documentation sources into the GitHub wiki.
 - `.github\agents\` contains custom Copilot agent definitions (`.agent.md` files) that appear in the agent picker for all collaborators. See `docs\research\custom-agent-packaging.md` for the packaging pattern.
 - `docs\research\` stores committed artifacts for closed Research issues (see `docs\research\README.md`).

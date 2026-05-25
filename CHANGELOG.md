@@ -6,6 +6,7 @@ All notable changes to this project should be recorded here. Each release entry 
 
 | Type | Change | Issue | PR | Evidence |
 |---|---|---|---|---|
+| Feature | Auto-address PR feedback from third-party agents: `plates-address-pr-feedback.yml` fires on `pull_request_review` and `pull_request_review_comment`; detects known agent reviewers (Devin, OpenHands, etc.); posts structured `@copilot` invocation comment; idempotent (10-minute cooldown); configurable via `PLATE_PR_FEEDBACK_AGENTS` repo variable. | #22 | Pending | `.github/workflows/plates-address-pr-feedback.yml`, `AGENTS.md §Third-Party Agent Feedback`, `.agentic/skills.yml`, `copilot-instructions.md`. |
 | Process | Establish PLATE template artifact baseline. | — | #2 | Repository files, labels, templates, and workflow scaffolds. |
 | Process | Add GitHub bootstrap guidance and automation based on recent repository setup lessons, including atomic PR labeling guidance for agents. | — | Pending merge | `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `.github/copilot-instructions.md`, `docs/bootstrap/new-repository-checklist.md`, `scripts/bootstrap_github.sh`, `scripts/BootstrapGitHub.ps1`. |
 | Feature | Add autonomous mode: `AGENTS.md §Autonomous Mode`, `auto-merge` label, `auto-merge.yml` workflow with marker-file gate, updated `copilot-instructions.md` and `CURRENT.md`. Mode is off by default; toggle via `.github/AUTONOMOUS_MODE`. | — | Pending merge | `AGENTS.md`, `.github/labels.yml`, `.github/workflows/auto-merge.yml`, `.github/copilot-instructions.md`, `CURRENT.md`. |

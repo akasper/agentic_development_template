@@ -163,6 +163,17 @@ gh api -X PUT repos/OWNER/REPO/actions/permissions/workflow \
 
 **Security posture:** Autonomous mode intentionally cannot self-escalate. An agent operating in autonomous mode may not create, modify, or delete `.github/AUTONOMOUS_MODE` itself, and may not relax branch protection rules or modify the eligibility criteria in this file.
 
+## Third-Party Agent Feedback
+
+When the `.github/workflows/plates-address-pr-feedback.yml` workflow posts a PLATES feedback trigger comment on a PR (identified by the `<!-- plates-feedback-trigger:@agent -->` marker), the receiving agent (GitHub Copilot) should:
+
+1. Fetch the full list of unresolved review comments and the overall review body from the named reviewer
+2. For each actionable item, push a code change or reply explaining why no change is needed
+3. For items requiring human judgment (credentials, architectural decisions, security changes), add `need:human-review` to the PR and leave a comment identifying what is blocked
+4. Push all changes and re-request review from the original reviewer when complete
+
+**Configuration:** Set the `PLATE_PR_FEEDBACK_AGENTS` repository variable to a comma-separated list of GitHub logins whose feedback should be auto-addressed (e.g., `devin-ai-integration[bot],openhands-agent`). When the variable is absent, the workflow matches common agent login patterns automatically.
+
 ## Label Rules
 
 Use labels as stable process metadata. Do not create ad hoc labels unless they change routing, enforcement, reporting, auditing, review burden, or agent behavior. Use GitHub Projects fields for frequently changing planning state such as priority, owner, rank, iteration, target date, or release target. The `status:blocked` and `status:ready-to-work` labels are the explicit exception used by PLATES native trigger workflows.

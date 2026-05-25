@@ -1,0 +1,144 @@
+name: PLATES Auto-Address PR Feedback
+
+# Fires when a third-party agent submits a PR review or leaves an inline
+# comment. If the sender matches a known agent list, posts a structured
+# @copilot invocation comment asking Copilot to address the feedback
+# autonomously. Human intervention is only requested when an item requires
+# judgment, credentials, or an architectural decision.
+
+on:
+  pull_request_review:
+    types: [submitted]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  address-feedback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect third-party agent feedback and notify Copilot
+        uses: actions/github-script@v7
+        env:
+          AGENT_LOGINS: ${{ vars.PLATE_PR_FEEDBACK_AGENTS }}
+        with:
+          script: |
+            // PLATE_PR_FEEDBACK_AGENTS repo variable: comma-separated GitHub logins
+            // of third-party agents whose feedback should trigger auto-addressing.
+            // Falls back to well-known default patterns when the variable is not set.
+            const configuredLogins = (process.env.AGENT_LOGINS || '')
+              .split(',')
+              .map((s) => s.trim().toLowerCase())
+              .filter(Boolean);
+
+            const DEFAULT_AGENT_PATTERNS = [
+              /^devin/i,
+              /^openhands/i,
+              /^codegen/i,
+              /^swe-agent/i,
+              /^aide-agent/i,
+              /^mentat-bot/i,
+            ];
+
+            const isKnownAgent = (login) => {
+              const lower = login.toLowerCase();
+              return configuredLogins.includes(lower) ||
+                DEFAULT_AGENT_PATTERNS.some((pattern) => pattern.test(login));
+            };
+
+            let reviewer = null;
+            let prNumber = null;
+            let reviewState = null;
+            let feedbackUrl = null;
+            let isBatchReview = false;
+
+            if (context.eventName === 'pull_request_review') {
+              const review = context.payload.review;
+              reviewer = review.user?.login;
+              reviewState = (review.state || '').toLowerCase();
+              feedbackUrl = review.html_url;
+              prNumber = context.payload.pull_request.number;
+              isBatchReview = true;
+
+              // An "approved" review with no body is a rubber stamp — nothing to act on
+              if (reviewState === 'approved' && !review.body?.trim()) {
+                core.info(`Skipping approved review with no body from @${reviewer}.`);
+                return;
+              }
+            } else if (context.eventName === 'pull_request_review_comment') {
+              const comment = context.payload.comment;
+              reviewer = comment.user?.login;
+              feedbackUrl = comment.html_url;
+              prNumber = context.payload.pull_request.number;
+              reviewState = 'commented';
+              isBatchReview = false;
+            }
+
+            if (!reviewer || !prNumber) {
+              core.info('Unable to determine reviewer or PR number; skipping.');
+              return;
+            }
+
+            if (!isKnownAgent(reviewer)) {
+              core.info(`@${reviewer} is not a known third-party agent; skipping.`);
+              return;
+            }
+
+            core.info(`Detected feedback from known agent @${reviewer} on PR #${prNumber} (state: ${reviewState}, batch: ${isBatchReview}).`);
+
+            // Deduplication: avoid posting multiple trigger comments within a short
+            // window (e.g., when a review fires multiple comment events in quick
+            // succession, or when the workflow re-triggers due to PR sync).
+            const MARKER = `<!-- plates-feedback-trigger:${reviewer} -->`;
+            const COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
+
+            const allComments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const recentTriggers = allComments.filter(
+              (c) => c.user?.type === 'Bot' && c.body?.includes(MARKER)
+            );
+            const latestTriggerAt = recentTriggers.length > 0
+              ? new Date(recentTriggers[recentTriggers.length - 1].created_at).getTime()
+              : 0;
+
+            if (Date.now() - latestTriggerAt < COOLDOWN_MS) {
+              core.info(`Trigger comment already posted within cooldown window for @${reviewer} on PR #${prNumber}; skipping.`);
+              return;
+            }
+
+            const stateLabel = {
+              changes_requested: '🔴 changes requested',
+              commented: '💬 feedback',
+              approved: '✅ approved with notes',
+            }[reviewState] || reviewState;
+
+            const body = [
+              MARKER,
+              `### PLATES: PR feedback from @${reviewer} (${stateLabel})`,
+              '',
+              `@copilot — @${reviewer} has left feedback on this PR. Per the PLATE autopilot doctrine, please address it autonomously:`,
+              '',
+              '1. Review all open inline comments and the overall review body from @' + reviewer,
+              '2. For each actionable item, make the necessary code change or explain in a reply comment why no change is needed',
+              '3. If any item requires human judgment (API keys, architectural decisions, security changes, credential handling), add the `need:human-review` label to this PR and leave a comment identifying exactly what requires human input',
+              '4. Push any resulting code changes and re-request review when complete',
+              '',
+              `Feedback thread: ${feedbackUrl}`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body,
+            });
+
+            core.info(`@copilot trigger comment posted on PR #${prNumber}.`);
