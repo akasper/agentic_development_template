@@ -1,120 +1,53 @@
-name: PLATE Label Check
+name: PLATE Issue Label Check
 
 on:
-  pull_request:
-    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
   issues:
     types: [opened, edited, labeled, unlabeled, reopened]
 
 permissions:
   contents: read
-  issues: write
-  pull-requests: write
+  issues: read
 
 jobs:
   check-labels:
     runs-on: ubuntu-latest
     steps:
-      - name: Validate PLATE label rules
+      - name: Validate PLATE issue label rules
         uses: actions/github-script@v7
         with:
           script: |
             const issueTypeLabels = ['Bug', 'Feature', 'Epic', 'Research', 'Design', 'Question', 'Audit', 'Migration'];
-            const prTypeLabels = ['Bug', 'Feature', 'Documentation'];
-            const target = context.payload.pull_request || context.payload.issue;
-            const isPullRequest = Boolean(context.payload.pull_request);
+            const issue = context.payload.issue;
 
-            if (!target) {
-              core.info('No issue or pull request payload found.');
+            if (!issue) {
+              core.info('No issue payload found.');
               return;
             }
 
-            const labels = (target.labels || []).map((label) => typeof label === 'string' ? label : label.name);
+            const labels = (issue.labels || []).map((label) => typeof label === 'string' ? label : label.name);
             const epicLabels = labels.filter((label) => /^Epic: .+/.test(label));
             const forbiddenPlanningLabels = labels.filter((label) => /^status:|^priority:/.test(label));
             core.info(`Labels: ${labels.join(', ') || '(none)'}`);
 
-            let failureMessage = null;
-
             if (forbiddenPlanningLabels.length > 0) {
-              failureMessage = `PLATE template repositories should use GitHub Projects fields for planning state, not labels: ${forbiddenPlanningLabels.join(', ')}.`;
-            } else if (isPullRequest) {
-              const matches = labels.filter((label) => prTypeLabels.includes(label));
-              if (matches.length !== 1) {
-                failureMessage = `Pull requests must have exactly one PLATE PR type label (${prTypeLabels.join(', ')}). Found: ${matches.join(', ') || '(none)'}.`;
-              }
-            } else {
-              const matches = labels.filter((label) => issueTypeLabels.includes(label));
-              if (matches.length !== 1) {
-                failureMessage = `Issues must have exactly one PLATE issue type label (${issueTypeLabels.join(', ')}). Found: ${matches.join(', ') || '(none)'}.`;
-              } else if (matches[0] === 'Feature' && epicLabels.length !== 1) {
-                failureMessage = `Feature issues must carry exactly one Epic: short-name label. Found: ${epicLabels.join(', ') || '(none)'}.`;
-              } else if (matches[0] === 'Epic' && epicLabels.length !== 1) {
-                failureMessage = `Epic issues must carry exactly one dedicated Epic: short-name label. Found: ${epicLabels.join(', ') || '(none)'}.`;
-              }
-            }
-
-            if (failureMessage) {
-              // On PRs: post an actionable repair comment so agents get instructions directly in the PR thread
-              if (isPullRequest) {
-                const prNumber = context.payload.pull_request.number;
-                const MARKER = '<!-- plate-label-check-v1 -->';
-                const repairBody = [
-                  MARKER,
-                  '## \u26a0\ufe0f PLATE Label Check Failed',
-                  '',
-                  `**${failureMessage}**`,
-                  '',
-                  '### How to fix',
-                  '',
-                  '> **Important:** The checkboxes in the PR template body do **not** apply GitHub labels.',
-                  '> Labels must be set explicitly via the CLI or GitHub API.',
-                  '',
-                  'Apply exactly one PR type label:',
-                  '',
-                  '```bash',
-                  `# Pick the label that matches this PR — then run exactly one of:`,
-                  `gh pr edit ${prNumber} --add-label "Feature"`,
-                  `gh pr edit ${prNumber} --add-label "Bug"`,
-                  `gh pr edit ${prNumber} --add-label "Documentation"`,
-                  '```',
-                  '',
-                  'For future PRs, set the label at creation time to avoid this failure:',
-                  '',
-                  '```bash',
-                  'gh pr create --label "Feature" ...',
-                  '```',
-                  '',
-                  '_After adding the label, this CI check will re-run automatically._',
-                ].join('\n');
-
-                const comments = await github.paginate(github.rest.issues.listComments, {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: prNumber,
-                });
-                const existing = comments.find(
-                  (c) => c.user.type === 'Bot' && c.body.includes(MARKER)
-                );
-                if (existing) {
-                  await github.rest.issues.updateComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    comment_id: existing.id,
-                    body: repairBody,
-                  });
-                } else {
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: prNumber,
-                    body: repairBody,
-                  });
-                }
-              }
-
-              core.setFailed(failureMessage);
+              core.setFailed(`PLATE repositories should use GitHub Projects fields for planning state, not labels: ${forbiddenPlanningLabels.join(', ')}.`);
               return;
             }
 
-            core.info('PLATE label rules passed.');
+            const matches = labels.filter((label) => issueTypeLabels.includes(label));
+            if (matches.length !== 1) {
+              core.setFailed(`Issues must have exactly one PLATE issue type label (${issueTypeLabels.join(', ')}). Found: ${matches.join(', ') || '(none)'}.`);
+              return;
+            }
+
+            if (matches[0] === 'Feature' && epicLabels.length !== 1) {
+              core.setFailed(`Feature issues must carry exactly one Epic: short-name label. Found: ${epicLabels.join(', ') || '(none)'}.`);
+              return;
+            }
+
+            if (matches[0] === 'Epic' && epicLabels.length !== 1) {
+              core.setFailed(`Epic issues must carry exactly one dedicated Epic: short-name label. Found: ${epicLabels.join(', ') || '(none)'}.`);
+              return;
+            }
+
+            core.info('PLATE issue label rules passed.');
