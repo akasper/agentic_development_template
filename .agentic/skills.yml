@@ -74,3 +74,18 @@ skills:
       - "provenance summary"
       - "scoped file list"
     requires_human_enablement: true
+  # PLATES-CORE:BEGIN template-sync-skill
+  - id: "template-sync"
+    description: "Import upstream PLATE template behavior changes while preserving downstream customizations."
+    allowed_artifacts:
+      - "AGENTS.md"
+      - ".agentic/skills.yml"
+      - "README.md"
+      - "CURRENT.md"
+      - ".github/workflows/**"
+    required_evidence:
+      - "upstream comparison reference"
+      - "PLATES-CORE block list"
+      - "downstream customization preservation summary"
+      - "checks run"
+  # PLATES-CORE:END template-sync-skill

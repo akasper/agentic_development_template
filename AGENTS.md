@@ -186,6 +186,30 @@ When opening pull requests through GitHub CLI, prefer an atomic command such as 
 
 For **every new pull request**, add exactly one required PR type label (`Bug`, `Feature`, or `Documentation`) at creation time. Unlabeled or multiply-labeled PRs fail CI immediately.
 
+## Upstream PLATE Template Synchronization
+
+<!-- PLATES-CORE:BEGIN upstream-template-sync -->
+Downstream PLATE repositories often customize baseline files such as `AGENTS.md`, `.agentic/skills.yml`, and workflow definitions. Do not overwrite those files wholesale during upgrades from `akasper/plate_template`.
+
+Use **sectional synchronization** for core behavior updates:
+
+1. Compare upstream and downstream files to identify changed `PLATES-CORE` blocks.
+2. Copy only the relevant core blocks into downstream files, preserving local sections outside those markers.
+3. Open an atomic PR labeled `Feature` (or `Documentation` for doc-only syncs) and include `Closes #N` when tied to an issue.
+4. Update `CURRENT.md` with the imported behavior and evidence links.
+5. Run the repository's required checks before requesting review.
+
+Marker format for sync-safe blocks:
+
+```md
+<!-- PLATES-CORE:BEGIN block-id -->
+... upstream-owned content ...
+<!-- PLATES-CORE:END block-id -->
+```
+
+When introducing new reusable process guidance, wrap it in a `PLATES-CORE` block so downstream repositories can apply low-friction partial merges without losing local customizations.
+<!-- PLATES-CORE:END upstream-template-sync -->
+
 ## Wiki Sync Rules
 
 The **Sync to Wiki on Merge** workflow is opt-in. Agents should not enable broad wiki writes without human approval. Prefer scoped page updates, provenance comments, auditable commits, and reversible changes. If wiki synchronization is requested but not configured, add `need:wiki-sync` and escalate.
