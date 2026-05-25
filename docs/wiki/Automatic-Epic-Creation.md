@@ -31,7 +31,7 @@ A GitHub Actions workflow fires on `issues: [opened]` and:
 
 ## Key Design Decisions (Pending Human Input)
 
-1. Naming convention: lowercase-hyphenated slugs only (`epic: my-area` → label `Epic: my-area`)
+1. Naming convention: lowercase-hyphenated slugs only (e.g., `Epic: my-area`)
 2. Trigger scope: `opened` events only, or also `edited`?
 3. Stub Epic sign-off: Require `need:decision` label clearance before Features proceed?
 4. Permission boundary: Limit auto-creation to collaborators?
