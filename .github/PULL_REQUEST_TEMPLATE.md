@@ -1,3 +1,23 @@
+<!--
+  ⚠️  AGENT REQUIRED ACTION — LABELS
+  The "Required PR Type Label" checkboxes below are documentation only.
+  Checking a box here does NOT apply a GitHub label to this PR.
+  You MUST apply exactly one type label via the CLI or GitHub API:
+
+    Preferred (at creation time):
+      gh pr create --label "Feature" ...
+      gh pr create --label "Bug" ...
+      gh pr create --label "Documentation" ...
+
+    If the PR is already open:
+      gh pr edit NUMBER --add-label "Feature"
+
+  Valid PR type labels: Bug | Feature | Documentation
+
+  Missing or multiple labels cause immediate CI failure (PLATE Label Check).
+  When CI fails, a repair comment will be posted on this PR with the exact command.
+-->
+
 # PLATE Pull Request
 
 ## Summary
