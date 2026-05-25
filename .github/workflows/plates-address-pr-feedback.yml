@@ -162,7 +162,13 @@ jobs:
           FEEDBACK_URL: ${{ steps.detect.outputs.feedback_url }}
           STATE_LABEL: ${{ steps.detect.outputs.state_label }}
           TRIGGER_MARKER: ${{ steps.detect.outputs.marker }}
+          # COPILOT_TRIGGER_PAT: optional repo secret. GitHub's Copilot assignment
+          # API may require a user token (PAT with `repo` scope) rather than the
+          # server-to-server GITHUB_TOKEN. Add this secret if auto-assignment fails
+          # even when Copilot Cloud Agent is enabled in Settings → Copilot.
+          COPILOT_TRIGGER_PAT: ${{ secrets.COPILOT_TRIGGER_PAT }}
         with:
+          github-token: ${{ secrets.COPILOT_TRIGGER_PAT || github.token }}
           script: |
             const reviewer = process.env.REVIEWER;
             const prNumber = parseInt(process.env.PR_NUMBER, 10);
@@ -232,21 +238,108 @@ jobs:
               core.warning(`Failed to create task issue: ${createErr.message} (HTTP ${createErr.status ?? 'unknown'}). Falling back to PR comment.`);
             }
 
-            // Step 3: Assign copilot separately so a failure here doesn't lose the issue.
+            // Step 3: Assign the Copilot Cloud Agent using the GraphQL API.
+            //
+            // IMPORTANT — two things differ from the naive REST approach:
+            //   a) The correct login is `copilot-swe-agent`, not `copilot`.
+            //      The REST assignees field needs `copilot-swe-agent[bot]`.
+            //   b) GitHub requires the `agentAssignment` input (GraphQL) or
+            //      `agent_assignment` body field (REST) to actually queue the
+            //      task; without it the assignment is a no-op.
+            //   c) The `GraphQL-Features` preview header is required.
+            //
+            // We first query `suggestedActors` to (1) verify the agent is
+            // enabled for this repo and (2) retrieve its opaque node ID which
+            // is needed by the mutation.
+            //
+            // Known limitation: GitHub's docs note this API requires a *user*
+            // token (PAT or OAuth). The GITHUB_TOKEN (installation token) may
+            // be rejected. If that happens the issue is still created — the
+            // tracking comment will tell you which step failed and why.
             let copilotAssigned = false;
             if (issueNumber) {
               try {
-                // checkUserCanBeAssigned returns 204 if valid, 404 if not.
-                await github.rest.issues.checkUserCanBeAssigned({ owner, repo, assignee: 'copilot' });
-                await github.rest.issues.addAssignees({
-                  owner, repo,
-                  issue_number: issueNumber,
-                  assignees: ['copilot'],
-                });
-                copilotAssigned = true;
-                core.info(`Assigned issue #${issueNumber} to copilot Coding Agent.`);
+                const GRAPHQL_FEATURES = 'issues_copilot_assignment_api_support,coding_agent_model_selection';
+
+                // Query suggestedActors to check availability + get node ID.
+                const actorsResult = await github.graphql(
+                  `query($owner: String!, $repo: String!) {
+                    repository(owner: $owner, name: $repo) {
+                      id
+                      suggestedActors(capabilities: [CAN_BE_ASSIGNED], first: 100) {
+                        nodes {
+                          login
+                          __typename
+                          ... on Bot { id }
+                          ... on User { id }
+                        }
+                      }
+                    }
+                  }`,
+                  {
+                    owner, repo,
+                    headers: { 'GraphQL-Features': GRAPHQL_FEATURES },
+                  }
+                );
+
+                const copilotNode = actorsResult.repository.suggestedActors.nodes
+                  .find(n => n.login === 'copilot-swe-agent');
+
+                if (!copilotNode) {
+                  core.warning(
+                    'Copilot Cloud Agent is not in suggestedActors for this repo. ' +
+                    'Verify it is enabled: Settings → Copilot → Cloud Agent. ' +
+                    `Issue #${issueNumber} was created but not assigned.`
+                  );
+                } else {
+                  // Fetch the issue node ID needed by the mutation.
+                  const issueResult = await github.graphql(
+                    `query($owner: String!, $repo: String!, $number: Int!) {
+                      repository(owner: $owner, name: $repo) {
+                        issue(number: $number) { id }
+                      }
+                    }`,
+                    { owner, repo, number: issueNumber }
+                  );
+                  const issueNodeId = issueResult.repository.issue.id;
+                  const repoNodeId  = actorsResult.repository.id;
+
+                  await github.graphql(
+                    `mutation($issueId: ID!, $actorIds: [ID!]!, $repoId: ID!, $branch: String!, $instructions: String!) {
+                      replaceActorsForAssignable(input: {
+                        assignableId: $issueId,
+                        actorIds: $actorIds,
+                        agentAssignment: {
+                          targetRepositoryId: $repoId,
+                          baseRef: $branch,
+                          customInstructions: $instructions,
+                          customAgent: "",
+                          model: ""
+                        }
+                      }) {
+                        assignable { ... on Issue { id } }
+                      }
+                    }`,
+                    {
+                      issueId: issueNodeId,
+                      actorIds: [copilotNode.id],
+                      repoId: repoNodeId,
+                      branch: prBranch,
+                      // Pass the issue body as custom instructions (first 1500 chars).
+                      instructions: issueBody.substring(0, 1500),
+                      headers: { 'GraphQL-Features': GRAPHQL_FEATURES },
+                    }
+                  );
+
+                  copilotAssigned = true;
+                  core.info(`Assigned issue #${issueNumber} to copilot-swe-agent via GraphQL.`);
+                }
               } catch (assignErr) {
-                core.warning(`Could not assign copilot (Coding Agent may not be enabled for this repo — see Settings → Copilot → Coding Agent): ${assignErr.message}`);
+                core.warning(
+                  `Could not assign Copilot Cloud Agent: ${assignErr.message}. ` +
+                  'This may require a user PAT (COPILOT_TRIGGER_PAT secret) if GITHUB_TOKEN is insufficient. ' +
+                  `Issue #${issueNumber} was created — assign it manually to trigger the agent.`
+                );
               }
             }
 
@@ -261,8 +354,10 @@ jobs:
             } else if (issueNumber) {
               commentBody = [
                 MARKER,
-                `⚠️ **PLATES:** Created task issue #${issueNumber} but could not assign the Copilot Coding Agent (it may not be enabled for this repository).`,
-                `Please enable it under **Settings → Copilot → Coding Agent**, then manually assign [issue #${issueNumber}](https://github.com/${owner}/${repo}/issues/${issueNumber}) to \`@copilot\`.`,
+                `⚠️ **PLATES:** Created task issue #${issueNumber} but could not assign the Copilot Cloud Agent automatically.`,
+                `Check the [workflow run logs](https://github.com/${owner}/${repo}/actions) for the specific error.`,
+                `To trigger manually: open [issue #${issueNumber}](https://github.com/${owner}/${repo}/issues/${issueNumber}) and assign it to **Copilot** from the Assignees panel.`,
+                `> If the error says "user token required", add a \`COPILOT_TRIGGER_PAT\` repository secret (a classic PAT with \`repo\` scope from your account).`,
               ].join('\n');
             } else {
               commentBody = [
