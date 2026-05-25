@@ -182,7 +182,7 @@ Every Feature pull request must modify `CURRENT.md`. Documentation pull requests
 
 See §Issue Artifact Rules for the full mapping of issue type to required artifact location.
 
-When opening pull requests through GitHub CLI, prefer an atomic command such as `gh pr create --label Feature` or `gh pr create --label Documentation`. If the PR is already open (e.g., created via the GitHub web UI or REST API), run `gh pr edit <number> --add-label "Feature"` as the very next step before any other work.
+When opening pull requests through GitHub CLI, prefer an atomic command such as `gh pr create --label "Feature"` or `gh pr create --label "Documentation"`. If the PR is already open (e.g., created via the GitHub web UI or REST API), run `gh pr edit <number> --add-label "Feature"` as the very next step before any other work.
 
 **Important:** The checkboxes in the PR template body do **not** apply GitHub labels. Labels must be set explicitly via the CLI or GitHub API.
 
