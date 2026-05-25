@@ -1,11 +1,9 @@
 # Research: Automatic Epic Creation
 
-| Field | Value |
-|---|---|
-| Issue | #28 |
-| Status | Complete — awaiting human decision |
-| Author | @copilot |
-| Date | 2026-05-25 |
+- **Issue:** #28
+- **Researched by:** @copilot
+- **Date:** 2026-05-25
+- **Status:** Complete — awaiting human decision
 
 ## Research Question
 
