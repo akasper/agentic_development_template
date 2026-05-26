@@ -489,7 +489,6 @@ This makes the session state part of the durable GitHub record. On re-entry, the
 |---|---|---|
 | OQ-1 | Should Research and Design stubs that block Feature stubs express that blocking relationship via GitHub's native blocker feature? | Yes, if the project has PLATE's blocker workflow enabled (sets `status:blocked` / `status:ready-to-work`). The agent should add blockers only when `PLATE_BLOCKERS_ENABLED` is set. Needs a follow-up Feature issue. |
 | OQ-2 | How should the agent handle a session where the user provides no `unknowns`, no `design_areas`, and no `features` — only the Epic identity? | Create the Epic stub with `need:refinement` and a comment asking the user to enumerate child work items in a follow-up session. Do not create child stubs. |
-<<<<<<< HEAD
 | OQ-3 | Is the `<!-- PLATE_SESSION_STATE -->` block safe from accidental human editing that would corrupt YAML? | Consider a checksum or version field in the YAML header. Needs a follow-up design decision. |
 | OQ-4 | Should the `Spike` label colour `e4e669` (yellow) be differentiated from `Feedback Response` which uses the same colour? | The two types have distinct enough names; colour collision is acceptable short-term. Revisit if the label UI becomes confusing. |
 
