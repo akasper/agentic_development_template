@@ -19,6 +19,7 @@ bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle
 ```
 
 Both scripts require only `gh` (GitHub CLI) and `git`. They cover the repeatable GitHub bootstrap work that otherwise gets missed in brand-new repositories.
+Both scripts also run runtime-aware local toolchain preflight and fail early when required tooling for detected manifests is missing (for example: `node`/`npm`, `wally`, `rojo`).
 
 ## Automatable Steps
 
@@ -30,6 +31,7 @@ Both scripts require only `gh` (GitHub CLI) and `git`. They cover the repeatable
 | Enable delete-branch-on-merge | Keeps the repository clean after reviewed work lands. | Yes |
 | Initialize the wiki from `docs/wiki/Home.md` | Prevents the GitHub wiki from starting empty when the repository-managed source already exists. | Yes, when `--init-wiki` / `-InitWiki` is passed |
 | Apply conservative baseline branch protection | Provides immediate protection against force-pushes and branch deletion while requiring conversation resolution. | Yes, when `--protect-branch BRANCH` / `-ProtectBranch BRANCH` is passed |
+| Verify local toolchain prerequisites based on detected manifests | Prevents late-stage local validation failures caused by missing runtimes or CLIs. | Yes (default). Use `--skip-runtime-toolchain-check` / `-SkipRuntimeToolchainCheck` only when intentionally bypassing preflight |
 
 ## Human Decisions Still Required
 

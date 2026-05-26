@@ -51,6 +51,8 @@ bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle
 .\scripts\BootstrapGitHub.ps1 -Repo OWNER/REPO -LocalRepo . -OwnerHandle @your-handle -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main
 ```
 
+Both bootstrap scripts run a runtime-aware local toolchain preflight (`scripts/check_toolchain.sh` or `scripts/CheckToolchain.ps1`) before GitHub mutations.
+
 See `docs/bootstrap/new-repository-checklist.md` for what is automated vs. what still requires human decisions.
 
 ### 3. Answer the onboarding questions

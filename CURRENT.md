@@ -31,6 +31,7 @@ last_verified_commit: "pending-merge"
 | Default onboarding question set | Implemented | #27 | Pending | `.github/agents/plate-configurator.agent.md`, `docs/design/default-questions.md`, repository diff review | `.github/agents/plate-configurator.agent.md`, `docs/design/default-questions.md`, `CURRENT.md` | Unreleased | 2026-05-26 |
 | Issue cost tracking | Implemented | #31 | Pending | `.github/workflows/cost-tracking.yml` — fires on `issues: [closed]`; finds linked PRs via closing keywords; sums CI run durations; posts idempotent cost summary comment | `CURRENT.md` | Unreleased | 2026-05-26 |
 | GitHub platform monitor | Implemented | #32 | Pending | `.github/workflows/platform-monitor.yml` — weekly scheduled workflow that creates a `Research` issue assigning Copilot to scan GitHub changelog for new capabilities | `CURRENT.md` | Unreleased | 2026-05-26 |
+| Template integrity + toolchain preflight enforcement | Implemented | — | Pending | `scripts/validate_plate_repo.sh` enforces required PLATE artifacts and runtime-placeholder drift checks; `ci.yml` now runs validator; `scripts/check_toolchain.sh` and `scripts/CheckToolchain.ps1` fail early when required local tools are missing; bootstrap scripts now use repository-local temp paths | `AGENTS.md §Template Integrity Rules`, `.github/copilot-instructions.md`, `docs/bootstrap/new-repository-checklist.md`, `README.md` | Unreleased | 2026-05-26 |
 
 ## Operational Behavior
 
@@ -43,6 +44,7 @@ last_verified_commit: "pending-merge"
 | Feature documentation gate | Feature PRs must modify `CURRENT.md`. | `.github/workflows/pr-documentation-check.yml` | Requires branch protection to make the check mandatory. |
 | PR issue-link check | PRs that resolve issues must include a closing keyword (`Closes #N`). Feature/Bug PRs fail CI without it; other types receive a warning. Feedback Response PRs are auto-generated and exempt from this requirement. PRs labeled `no-issue` are exempt. | `.github/workflows/pr-issue-link-check.yml` | Soft warning for non-Feature/Bug types; relies on agent compliance for those. |
 | Issue artifact requirement | Research, Design, Audit, and Migration issues must close with a committed artifact (see `AGENTS.md §Issue Artifact Rules`). | `AGENTS.md`, `docs/research/README.md`, `docs/design/README.md` | No automated enforcement on issue close; relies on PR content review. |
+| Template integrity + runtime drift guard | CI validates required agent-facing artifacts, and fails when runtime manifests are present but CI/docs still use template placeholder claims. | `.github/workflows/ci.yml`, `scripts/validate_plate_repo.sh`, `.github/copilot-instructions.md` | Manifest detection is convention-based; uncommon stacks may need additional manifest patterns. |
 | Wiki synchronization | Disabled by default and opt-in through repository configuration. | `.github/workflows/sync-wiki-on-merge.yml` | Requires `WIKI_TOKEN` and human approval before enabling writes. |
 | Autonomous mode | Disabled by default. Create `.github/AUTONOMOUS_MODE` to enable; delete it to disable. When active, agents may auto-merge eligible `risk:low` PRs labeled `auto-merge`. | `.github/workflows/auto-merge.yml`, `AGENTS.md §Autonomous Mode` | Requires `allow_auto_merge: true` and Actions write permissions (`default_workflow_permissions=write`) on the repository. |
 
@@ -50,6 +52,5 @@ last_verified_commit: "pending-merge"
 
 | Gap | Tracking Issue | Notes |
 |---|---|---|
-| Project-specific CI commands are not defined by the generic template. | TBD | Each generated project should replace placeholder CI steps with stack-specific commands. |
 | Release automation is scaffolded but not project-specific. | TBD | Release policy should be completed after deployment target selection. |
 | GitHub Projects fields are still documented but not automatically provisioned by the template. | TBD | Teams must still create project fields manually to align planning state with PLATE guidance. |

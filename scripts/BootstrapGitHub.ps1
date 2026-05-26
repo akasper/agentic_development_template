@@ -31,6 +31,9 @@
 .PARAMETER InitWiki
     Initialize the wiki with docs/wiki/Home.md.
 
+.PARAMETER SkipRuntimeToolchainCheck
+    Skip runtime-aware local toolchain preflight.
+
 .EXAMPLE
     .\BootstrapGitHub.ps1 -Repo owner/repo -OwnerHandle @your-handle `
         -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main -InitWiki
@@ -51,7 +54,9 @@ param(
 
     [string]$ProtectBranch = "",
 
-    [switch]$InitWiki
+    [switch]$InitWiki,
+
+    [switch]$SkipRuntimeToolchainCheck
 )
 
 Set-StrictMode -Version Latest
@@ -72,6 +77,11 @@ if (-not (Test-Path $LabelsPath)) {
 
 & gh auth status
 if ($LASTEXITCODE -ne 0) { exit 1 }
+
+if (-not $SkipRuntimeToolchainCheck) {
+    & (Join-Path $LocalRepo "scripts\CheckToolchain.ps1") -Root $LocalRepo
+    if ($LASTEXITCODE -ne 0) { exit 1 }
+}
 
 function ConvertFrom-LabelsYml {
     param([string]$Path)
@@ -185,7 +195,9 @@ if ($ProtectBranch -ne "") {
   "lock_branch": false,
   "allow_fork_syncing": true
 }'
-    $tmpFile = [System.IO.Path]::GetTempFileName()
+    $tempRoot = Join-Path $LocalRepo ".agentic\tmp\bootstrap"
+    New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+    $tmpFile = Join-Path $tempRoot ("branch-protection-{0}.json" -f [guid]::NewGuid().ToString("N"))
     try {
         [System.IO.File]::WriteAllText($tmpFile, $protectionJson, [System.Text.Encoding]::UTF8)
         & gh api `
@@ -214,11 +226,13 @@ if ($InitWiki) {
     $authorEmail = if ($user.email) { $user.email } else { "$($user.login)@users.noreply.github.com" }
     $token = (& gh auth token)
 
-    $wikiDir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+    $tempRoot = Join-Path $LocalRepo ".agentic\tmp\bootstrap"
+    New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+    $wikiDir = Join-Path $tempRoot ("wiki-" + [guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Path $wikiDir | Out-Null
     try {
         $cloneUrl = "https://github.com/${Repo}.wiki.git"
-        $askpassFile = Join-Path ([System.IO.Path]::GetTempPath()) ("git-askpass-" + [System.IO.Path]::GetRandomFileName())
+        $askpassFile = Join-Path $tempRoot ("git-askpass-" + [guid]::NewGuid().ToString("N"))
         try {
             if ($env:OS -eq "Windows_NT") {
                 $askpassFile += ".cmd"
