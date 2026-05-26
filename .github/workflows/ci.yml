@@ -107,4 +107,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Tests
-        run: echo "Tests would run here"
+        run: bash scripts/validate_plate_repo.sh .
