@@ -104,6 +104,22 @@ jobs:
               return;
             }
 
+            const { data: prIssue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const prLabels = (prIssue.labels || []).map((label) =>
+              typeof label === 'string' ? label : label.name
+            );
+
+            if (prLabels.includes('Feedback Response')) {
+              core.info(`PR #${prNumber} is labeled Feedback Response; skipping third-party feedback auto-addressing.`);
+              core.setOutput('should_act', 'false');
+              return;
+            }
+
             if (!isKnownAgent(reviewer)) {
               core.info(`@${reviewer} is not a known third-party agent; skipping.`);
               core.setOutput('should_act', 'false');
