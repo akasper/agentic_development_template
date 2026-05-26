@@ -101,6 +101,7 @@ skills:
       - "merge own pull request"
       - "modify AGENTS.md, SPEC.md, or workflow files without explicit approval"
       - "change credentials, secrets, or authentication configuration"
+  # PLATES-CORE:BEGIN interactive-epic-planning-skill
   - id: "interactive-epic-planning"
     description: "Conduct a guided Q&A session to extract epic requirements and progressively create the Epic issue and child stubs on GitHub."
     allowed_artifacts:
@@ -116,6 +117,7 @@ skills:
       - "merge own pull request"
       - "skip duplicate detection before creating"
       - "create more than 3 child stubs per type without user confirmation"
+  # PLATES-CORE:END interactive-epic-planning-skill
   # PLATES-CORE:BEGIN template-sync-skill
   - id: "template-sync"
     description: "Import upstream PLATE template behavior changes while preserving downstream customizations."

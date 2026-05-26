@@ -67,27 +67,29 @@ planning_session:
   features: []                 # Items classified as needing Feature implementation.
   spikes: []                   # Items flagged for Spike (time-boxed exploration).
 
-  # Session lifecycle
-  session_state: string        # BUILDING_EPIC | BUILDING_CHILDREN | COMPLETE | PAUSED
+  # Session lifecycle (serialized to PLATE_SESSION_STATE block in Epic body)
+  phase: string                # planning_mode | building_children | complete | paused | abandoned
+  last_step: string            # name of last completed Q&A turn or gate
   github_epic_number: int      # Null until Epic issue is created.
 
   # Created issue registry — populated during issue-creation phase
   child_issues: []             # List of {number: int, type: string, title: string}.
 ```
 
-#### `session_state` transitions
+#### `phase` transitions (in persisted PLATE_SESSION_STATE)
 
 ```
-BUILDING_EPIC
+planning_mode
     │  (epic_name and problem_statement confirmed)
     ▼
-BUILDING_CHILDREN
+building_children
     │  (all stubs created)
     ▼
-COMPLETE
+complete
 
-Any state ──► PAUSED  (user ends session; serialise document)
-PAUSED      ──► BUILDING_EPIC | BUILDING_CHILDREN  (session resumed)
+Any state ──► paused     (user ends session; serialise document)
+Any state ──► abandoned (user explicitly cancels)
+paused      ──► planning_mode | building_children  (session resumed)
 ```
 
 ---
@@ -174,7 +176,7 @@ The agent populates the following fields exactly as specified. Cells marked `{va
 |---|---|---|---|---|---|
 | **title** | `[Epic] {epic_name}` | `Research: {topic}` | `Design: {area}` | `Feature: {capability}` | `Spike: {question}` |
 | **body** | See §4.1 | See §4.2 | See §4.3 | See §4.4 | See §4.5 |
-| **labels** | `Epic`, `Epic: {slug}` | `Research`, `Epic: {slug}` | `Design`, `Epic: {slug}` | `Feature`, `Epic: {slug}`, `need:refinement` | `Spike`, `Epic: {slug}`, `need:refinement` |
+| **labels** | `Epic`, `Epic: {slug}` | `Research`, `Epic: {slug}`, `need:refinement` | `Design`, `Epic: {slug}`, `need:refinement` | `Feature`, `Epic: {slug}`, `need:refinement` | `Spike`, `Epic: {slug}`, `need:refinement` |
 | **closing keyword** | n/a (Epic is the root) | `Closes #{epic_number}` | `Closes #{epic_number}` | `Closes #{epic_number}` | `Closes #{epic_number}` |
 | **milestone** | Set if session includes target release | Inherit from Epic | Inherit from Epic | Inherit from Epic | Inherit from Epic |
 
@@ -348,10 +350,12 @@ The `need:refinement` label is removed by a **human** after they have reviewed a
 
 Every child issue body MUST contain either:
 
-- `Closes #{epic_number}` (preferred) — creates a native cross-reference in the Epic timeline. **Note:** GitHub only processes closing keywords in PR bodies and commit messages, not in issue bodies. When placed in a child issue body, this keyword serves as (1) a navigation cross-reference and (2) a template hint — agents and humans implementing the child issue should copy this keyword into the implementing PR body, where GitHub will then automatically close the issue when the PR merges to the default branch. **OR**
+- `Closes #{epic_number}` (preferred) — creates a native cross-reference / mention in the Epic timeline. **Note:** GitHub only processes closing keywords in PR bodies and commit messages, not in issue bodies. A `Closes` keyword in a child issue body is solely a navigation aid; it does **not** cause any issue to auto-close. **OR**
 - `<!-- PLATES-EPIC: #{epic_number} -->` — used only when the issue does not directly close the Epic (e.g. a Research stub whose findings feed a Design issue that closes the Epic). The HTML comment preserves machine-readable traceability even if GitHub's cross-reference is absent.
 
 Both forms may coexist. The preferred pattern for most stubs is the `Closes` keyword.
+
+**Important:** The implementing PR for a child stub must contain `Closes #{child_issue_number}` (per AGENTS.md), **not** `Closes #{epic_number}`. Closing the Epic is a separate step after all children are resolved.
 
 #### Agent verification before marking a stub complete
 
