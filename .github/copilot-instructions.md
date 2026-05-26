@@ -70,6 +70,24 @@ Read those pieces together when making process changes. A change in one of them 
 - Do not weaken tests, documentation gates, or workflow checks to make a change pass. Human review and merge authority remain outside agent authority except as defined in `AGENTS.md §Autonomous Mode`.
 - **Before opening any Feature issue that depends on an external API**, verify that `SPEC.md §External Integrations` contains an entry for that API and confirm it is reachable. If API availability is uncertain, open a Research issue first.
 
+## Recording and GIF generation for UI features
+
+When implementing a Feature that includes UI changes, use the local recording and GIF generation scripts to create demo artifacts for documentation and PRs:
+
+**Quick reference:**
+- **macOS/Linux:** `./scripts/e2e-record.sh <test-name> --headed` records a test and offers to generate a GIF
+- **Windows:** `.\scripts\e2e-record.ps1 -TestName <test-name> -Headed` does the same
+- GIFs are saved to `tests/e2e/fixtures/gifs/` and should be committed with the PR
+- Full guidance: see `scripts/README.md`
+
+**Typical workflow:**
+1. Write a Playwright test that reproduces the feature (5-15 seconds)
+2. Record with `--headed` flag to see the browser during recording
+3. When prompted, generate a GIF (choose quality: low, medium, or high)
+4. Commit the GIF and include it in the PR description: `![Feature Demo](../../fixtures/gifs/feature-name-demo.gif)`
+
+**Dependencies:** Node.js 18+, npm, Playwright (in project), ffmpeg (optional for GIF generation). See `scripts/README.md` for installation and troubleshooting.
+
 ## Interactive epic planning
 
 When a user in Copilot chat expresses intent to plan a large feature or epic, use the `interactive-epic-planning` skill (see `.agentic/skills.yml`). The complete behavior spec is in `AGENTS.md §Interactive Epic Planning` and `.agentic/skills.yml`.

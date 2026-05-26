@@ -216,6 +216,8 @@ jobs:
     needs: test-e2e
     if: success() && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'demo')
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -227,20 +229,89 @@ jobs:
           name: playwright-videos
 
       - name: Convert videos to GIFs
+        id: gif-generation
         run: |
           mkdir -p tests/spike-videos
+          gif_count=0
+          failed_gifs=""
+          
           for video in test-results/**/*.webm; do
             if [ -f "$video" ]; then
               gif_name="tests/spike-videos/$(basename "$video" .webm).gif"
               echo "Converting $video to $gif_name"
-              ffmpeg -i "$video" -vf "fps=10,scale=1280:-1:flags=lanczos" "$gif_name"
+              ./scripts/gif-from-video.sh "$video" "$gif_name" --quality medium || true
+              
+              # Check file size if GIF was created
+              if [ -f "$gif_name" ]; then
+                size_bytes=$(stat -c%s "$gif_name")
+                size_mb=$(echo "scale=2; $size_bytes / 1048576" | bc)
+                
+                # Size validation: warn at 3MB, fail at 5MB
+                if (( $(echo "$size_mb > 5" | bc -l) )); then
+                  echo "❌ GIF too large: $gif_name ($size_mb MB, max 5 MB)"
+                  failed_gifs="$failed_gifs\n- $gif_name ($size_mb MB)"
+                  rm "$gif_name"
+                elif (( $(echo "$size_mb > 3" | bc -l) )); then
+                  echo "⚠️ GIF size warning: $gif_name ($size_mb MB, recommended <3 MB)"
+                else
+                  echo "✅ GIF OK: $gif_name ($size_mb MB)"
+                  gif_count=$((gif_count + 1))
+                fi
+              fi
             fi
           done
+          
+          echo "gif_count=$gif_count" >> $GITHUB_OUTPUT
+          if [ -n "$failed_gifs" ]; then
+            echo "failed_gifs<<EOF$failed_gifs" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
 
       - name: Upload generated GIFs
+        if: steps.gif-generation.outputs.gif_count > 0
         uses: actions/upload-artifact@v4
         with:
           name: demo-gifs
           path: tests/spike-videos/**/*.gif
           retention-days: 90
           if-no-files-found: ignore
+
+      - name: Post GIF summary to PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const gifCount = '${{ steps.gif-generation.outputs.gif_count }}';
+            const failedGifs = `${{ steps.gif-generation.outputs.failed_gifs }}`;
+            const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            
+            let comment = '🎬 **Demo GIF Generation Summary**\n\n';
+            
+            if (gifCount > 0) {
+              comment += `✅ **Generated ${gifCount} GIF(s)** from test videos\n\n`;
+              comment += `📦 **Artifacts:** [Download GIFs](${runUrl}#artifacts)\n\n`;
+              comment += 'GIFs can be embedded in documentation using:\n';
+              comment += '```markdown\n';
+              comment += '![Test Demo](tests/spike-videos/test-name.gif)\n';
+              comment += '```\n';
+            }
+            
+            if (failedGifs) {
+              comment += '\n❌ **Failed to generate (size > 5MB):**\n' + failedGifs + '\n\n';
+              comment += 'Consider using `--quality low` or trimming the video.\n';
+            }
+            
+            if (gifCount === 0 && !failedGifs) {
+              comment += 'No test videos found to convert.\n';
+            }
+            
+            try {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment,
+              });
+            } catch (error) {
+              console.log('Comment creation skipped:', error.message);
+            }

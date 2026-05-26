@@ -44,8 +44,49 @@ Follow the loop that matches the issue type.
 | 3 | Add or update tests before or alongside implementation. |
 | 4 | Implement the smallest coherent change that satisfies the issue. |
 | 5 | Update `CURRENT.md` to describe the implemented behavior and verification evidence. |
-| 6 | Open a PR labeled `Feature` with `Closes #N` in the body. Complete the PR template. When using GitHub CLI, apply the type label in the `gh pr create` command itself rather than relying on a later edit step. |
-| 7 | Leave wiki-sync, release-note, and audit evidence for the human reviewer and post-merge workflows. |
+| 6 | If the feature includes UI changes, record a demo GIF (see Demo GIF Recording guidance below). |
+| 7 | Open a PR labeled `Feature` with `Closes #N` in the body. Complete the PR template. When using GitHub CLI, apply the type label in the `gh pr create` command itself rather than relying on a later edit step. |
+| 8 | Leave wiki-sync, release-note, and audit evidence for the human reviewer and post-merge workflows. |
+
+**Demo GIF Recording for UI Features**
+
+When implementing a Feature that includes UI changes or user interactions:
+
+1. **Create a Playwright test** that reproduces the feature workflow (login, create an account, navigate a flow, etc.). Ensure the test is deterministic and takes 5-15 seconds.
+
+2. **Record the test** using the local recording scripts:
+   - **macOS/Linux:** `./scripts/e2e-record.sh "test-name" --headed`
+   - **Windows:** `.\scripts\e2e-record.ps1 -TestName "test-name" -Headed`
+   - The `--headed` flag shows the browser during recording; the script captures video automatically.
+
+3. **Generate a demo GIF** when prompted by the script:
+   - Choose quality: `low` (fastest, smallest), `medium` (default), or `high` (best quality)
+   - Accept the suggested name or provide a custom name
+   - GIF is saved to `tests/e2e/fixtures/gifs/`
+
+4. **Include the GIF in your PR description** or wiki article:
+   ```markdown
+   ![Feature Demo](../../fixtures/gifs/feature-name-demo.gif)
+   ```
+
+5. **Commit the GIF** with your PR. GIFs are durable documentation and should be versioned alongside code changes.
+
+**Troubleshooting:** See `scripts/README.md` for complete documentation, ffmpeg installation, GIF size optimization, and troubleshooting.
+
+**Example workflow:**
+```bash
+# Write the test
+# ... edit tests/e2e/features.spec.ts ...
+
+# Record with visible browser
+./scripts/e2e-record.sh "should create new account" --headed
+
+# When prompted, generate a medium-quality GIF
+# GIF is saved: tests/e2e/fixtures/gifs/create-account-demo.gif
+
+# Commit and include in PR
+git add tests/e2e/fixtures/gifs/create-account-demo.gif
+```
 
 **Bug**
 
