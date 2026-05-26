@@ -126,7 +126,7 @@ jobs:
             });
 
             const recentTriggers = allComments.filter(
-              (c) => c.user?.type === 'Bot' && c.body?.includes(MARKER)
+              (c) => c.body?.includes(MARKER)
             );
             const latestTriggerAt = recentTriggers.length > 0
               ? new Date(recentTriggers[recentTriggers.length - 1].created_at).getTime()
