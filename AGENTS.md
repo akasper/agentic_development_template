@@ -104,7 +104,7 @@ Every issue must close with a traceable git artifact — either a code change in
 | `Migration` | Update committed to `docs/migration/` | `Documentation` |
 | `Epic` | Wiki summary in `docs/wiki/` or epic comment summarizing child outcomes | `Documentation` |
 
-When GitHub's native closing keyword (`Closes #N`, `Fixes #N`, `Resolves #N`) is present in the PR body and the PR merges to the default branch, GitHub automatically closes the linked issue. **Always include a closing keyword in the PR body.** This is enforced by `.github/workflows/pr-issue-link-check.yml` (warning gate).
+When GitHub's native closing keyword (`Closes #N`, `Fixes #N`, `Resolves #N`) is present in the PR body and the PR merges to the default branch, GitHub automatically closes the linked issue. **Always include a closing keyword in the PR body, except for `Feedback Response` PRs which are exempt.** This is enforced by `.github/workflows/pr-issue-link-check.yml` (warning gate).
 
 Before closing any issue (manually or via linked PR), post a final comment that includes a structured usage block:
 
@@ -213,7 +213,7 @@ gh api -X PUT repos/OWNER/REPO/actions/permissions/workflow \
 
 ## Third-Party Agent Feedback
 
-When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR, the `.github/workflows/plates-address-pr-feedback.yml` workflow creates a GitHub issue titled `[PLATES] Address @<agent> feedback on PR #N` and assigns it to `copilot`. The Copilot Coding Agent picks up the issue and should:
+When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR that is **not** already labeled `Feedback Response`, the `.github/workflows/plates-address-pr-feedback.yml` workflow creates a GitHub issue titled `[PLATES] Address @<agent> feedback on PR #N` and assigns it to `copilot`. `Feedback Response` PRs are already in the dedicated response lane and are skipped by that workflow. The Copilot Coding Agent picks up the issue and should:
 
 1. Review all open inline comments and the overall review body from the named reviewer on the linked PR
 2. For any comment that includes a GitHub code suggestion (` ```suggestion ` block): apply it directly as a commit **unless** the suggestion introduces a bug or relies on a false assumption — if you skip a suggestion, reply to that thread with a brief explanation
@@ -231,7 +231,7 @@ When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR, the `
 
 | Stage | Expected artifact |
 |---|---|
-| Workflow fires | Issue created with `Feedback Response` label, assigned to `copilot` |
+| Workflow fires | Issue created for feedback on a non-`Feedback Response` PR, assigned to `copilot` |
 | Auto-labeling fires | PR/issue automatically receives `risk:low` and `auto-merge` labels via `auto-label-feedback-responses.yml` |
 | Copilot addresses feedback | Commits pushed to existing PR branch; review threads resolved |
 | If a new PR is needed | PR labeled `Feedback Response`, no closing keyword required; `risk:low` and `auto-merge` applied automatically |
@@ -318,4 +318,4 @@ Escalate to a human when product intent is ambiguous, acceptance criteria confli
 
 ## Prohibited Actions
 
-Agents must not merge their own pull requests **unless autonomous mode is active (`.github/AUTONOMOUS_MODE` present on the default branch) and the PR meets all eligibility criteria in §Autonomous Mode above**. Agents must not bypass required checks, remove documentation gates, weaken tests to pass CI, fabricate test results, silently rewrite product intent, expose secrets, enable write automation without approval, create or delete `.github/AUTONOMOUS_MODE` themselves, or treat chat history as more authoritative than repository artifacts. Agents must not close an issue without a corresponding PR that carries a `Closes #N` reference in its body. Agents must not open a PR that resolves a specific issue without including `Closes #N`, `Fixes #N`, or `Resolves #N` in the PR body.
+Agents must not merge their own pull requests **unless autonomous mode is active (`.github/AUTONOMOUS_MODE` present on the default branch) and the PR meets all eligibility criteria in §Autonomous Mode above**. Agents must not bypass required checks, remove documentation gates, weaken tests to pass CI, fabricate test results, silently rewrite product intent, expose secrets, enable write automation without approval, create or delete `.github/AUTONOMOUS_MODE` themselves, or treat chat history as more authoritative than repository artifacts. Agents must not close an issue without a corresponding PR that carries a `Closes #N` reference in its body, except for `Feedback Response` PRs. Agents must not open a PR that resolves a specific issue without including `Closes #N`, `Fixes #N`, or `Resolves #N` in the PR body, except for `Feedback Response` PRs.

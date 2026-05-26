@@ -35,6 +35,10 @@ jobs:
 
             // Feature and Bug PRs are expected to always link an issue; fail for those.
             // Feedback Response PRs are auto-generated and exempt from closing keyword requirement.
+            if (labels.includes('Feedback Response')) {
+              core.info('PR labeled Feedback Response — closing keyword check skipped.');
+              return;
+            }
             const requiresIssue = labels.some((l) => ['Feature', 'Bug'].includes(l));
 
             const message = [
