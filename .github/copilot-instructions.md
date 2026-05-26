@@ -63,7 +63,7 @@ Read those pieces together when making process changes. A change in one of them 
 
 ## Interactive epic planning
 
-When a user in Copilot chat expresses intent to plan a large feature or epic, use the `interactive-epic-planning` skill (see `.agentic/skills.yml`). The complete behavior spec is in `AGENTS.md §Interactive Epic Planning` and the design documents at `docs/design/epic-planning-dialogue-flow.md` and `docs/design/conversation-to-issue-graph.md`.
+When a user in Copilot chat expresses intent to plan a large feature or epic, use the `interactive-epic-planning` skill (see `.agentic/skills.yml`). The complete behavior spec is in `AGENTS.md §Interactive Epic Planning` and `.agentic/skills.yml`.
 
 Quick reference:
 - Detect intent via 3-tier signal scoring; only ask the confirmation question at HIGH (≥5 points).

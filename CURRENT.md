@@ -31,7 +31,7 @@ last_verified_commit: "pending-merge"
 | Default onboarding question set | Implemented | #27 | Pending | `.github/agents/plate-configurator.agent.md`, `docs/design/default-questions.md`, repository diff review | `.github/agents/plate-configurator.agent.md`, `docs/design/default-questions.md`, `CURRENT.md` | Unreleased | 2026-05-26 |
 | Issue cost tracking | Implemented | #31 | Pending | `.github/workflows/cost-tracking.yml` — fires on `issues: [closed]`; finds linked PRs via closing keywords; sums CI run durations; posts idempotent cost summary comment | `CURRENT.md` | Unreleased | 2026-05-26 |
 | GitHub platform monitor | Implemented | #32 | Pending | `.github/workflows/platform-monitor.yml` — weekly scheduled workflow that creates a `Research` issue assigning Copilot to scan GitHub changelog for new capabilities | `CURRENT.md` | Unreleased | 2026-05-26 |
-| Interactive epic planning (Phase 1) | Implemented | #85 | This PR | `AGENTS.md §Interactive Epic Planning`, `.agentic/skills.yml`, `.github/copilot-instructions.md`, `plate_core` `plate_plan_epic` stub | `docs/design/epic-planning-dialogue-flow.md`, `docs/design/conversation-to-issue-graph.md` | Unreleased | 2026-05-27 |
+| Interactive epic planning (Phase 1) | Implemented | #85 | This PR | `AGENTS.md §Interactive Epic Planning`, `.agentic/skills.yml`, `.github/copilot-instructions.md` | `AGENTS.md`, `.agentic/skills.yml`, `.github/copilot-instructions.md` | Unreleased | 2026-05-26 |
 
 ## Operational Behavior
 
