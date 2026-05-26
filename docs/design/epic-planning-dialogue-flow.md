@@ -347,10 +347,12 @@ gh issue create \
   --label "need:refinement"
 ```
 
+Include the `--label "need:refinement"` flag only when `[type]` is `Feature`.
+
 Fields set at child creation:
 - **Title:** `[Type]: [descriptive title]`
 - **Body:** Problem statement copied from Epic body, parent Epic reference, stub note
-- **Labels:** issue-type label (`Research`, `Design`, or `Feature`), `Epic: [slug]`, `need:refinement`
+- **Labels:** issue-type label (`Research`, `Design`, or `Feature`), `Epic: [slug]`; include `need:refinement` only for `Feature` stubs
 
 After each child is created, the agent updates the Epic body's `PLATE_SESSION_STATE` block with the new issue number.
 
