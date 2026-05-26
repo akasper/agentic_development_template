@@ -27,6 +27,8 @@ last_verified_commit: "pending-merge"
 | Auto-address PR feedback from third-party agents | Implemented | #22 | #30 | `plates-address-pr-feedback.yml` fires on `pull_request_review` and `pull_request_review_comment`; posts `@copilot` invocation comment for known agent reviewers via `COPILOT_TRIGGER_PAT` (human PAT) for correct routing; concurrency-safe; instructs Copilot to apply suggestions, resolve threads, and escalate human-judgment items | `AGENTS.md §Third-Party Agent Feedback`, `copilot-instructions.md`, `.agentic/skills.yml` | Unreleased | 2026-05-25 |
 | Custom agent packaging | Implemented | #23 | Pending | `.github/agents/plate-configurator.agent.md`, `.agentic/extensions.yml`, `.agentic/skills.yml`, `docs/research/custom-agent-packaging.md` | `docs/research/custom-agent-packaging.md` | Unreleased | 2026-05-25 |
 | Automatic Epic creation research | Research complete | #28 | Pending | `docs/research/automatic-epic-creation.md`, `docs/wiki/Automatic-Epic-Creation.md` | `docs/wiki/Automatic-Epic-Creation.md` | Unreleased | 2026-05-25 |
+| Playwright-first E2E testing guidance | Implemented | #26 | Pending | `.github/copilot-instructions.md`, `tests/README.md`, repository diff review | `.github/copilot-instructions.md`, `tests/README.md` | Unreleased | 2026-05-26 |
+| Default onboarding question set | Implemented | #27 | Pending | `.github/agents/plate-configurator.agent.md`, `docs/design/default-questions.md`, repository diff review | `.github/agents/plate-configurator.agent.md`, `docs/design/default-questions.md`, `CURRENT.md` | Unreleased | 2026-05-26 |
 
 ## Operational Behavior
 

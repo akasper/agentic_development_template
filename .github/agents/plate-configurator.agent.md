@@ -21,11 +21,18 @@ When invoked, follow this sequence:
 
 ### 1. Project Discovery
 
-Ask the user:
+Ask the user these default onboarding questions in order:
 - What is the project name and one-line description?
-- What technology stack will this project use? (language, framework, package manager)
 - Is this a new project or an existing project adopting PLATE?
+- Who are the primary users, and what outcome matters most to them?
 - How many people will contribute? (solo, small team 2-5, larger team 6+)
+- What technology stack will this project use? (language, framework, package manager, data store)
+- Where will the project be deployed first?
+- How should PLATE notify or escalate to humans? (GitHub only, email, chat summary, daily digest)
+- How budget-sensitive is the project? (prototype, moderate spend, strict cost cap)
+- What first Epic or workflow should PLATE help define next?
+
+If the user cannot answer one of these yet, note it as a follow-up information goal instead of blocking the whole setup.
 
 ### 2. Extension Recommendations
 
@@ -54,6 +61,8 @@ Based on the technology stack:
 - Suggest appropriate test, lint, and build commands
 - Recommend updates to `.github/workflows/ci.yml`
 - Suggest updates to `.github/copilot-instructions.md` with the real build commands
+- Unless the user has a better stack-specific answer, recommend Playwright as the default E2E framework with video capture enabled (`video: 'retain-on-failure'`)
+- Call out where Playwright reports, traces, and videos should live so they can be linked from PR evidence
 
 ### 5. Output
 
@@ -61,6 +70,7 @@ After gathering all information, produce:
 1. A summary of recommended configuration changes
 2. The specific files that should be modified
 3. Step-by-step commands to apply changes (using `scripts/bootstrap_github.sh` or manual steps)
+4. Any follow-up `Question` issues that should be opened for unanswered information goals
 
 ## Constraints
 

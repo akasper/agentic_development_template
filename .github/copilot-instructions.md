@@ -2,13 +2,20 @@
 
 ## Build, test, and lint
 
-This template does not define a local build, lint, or test toolchain yet. `tests\README.md` is a placeholder, and `.github\workflows\ci.yml` currently contains a scaffold step that only echoes `"Tests would run here"`.
+This template does not define a local build, lint, or test toolchain yet. `.github\workflows\ci.yml` still contains a scaffold step that only echoes `"Tests would run here"`, but downstream PLATE repositories should assume **Playwright** as the default E2E framework unless they document a better stack-specific alternative.
 
 When a downstream project adds a runtime or package manager, prefer the real project commands over inventing new ones, and update this file with:
 
 - the full test command
 - the single-test command for that stack
 - any build and lint commands that CI actually uses
+- the default Playwright command and artifact locations for E2E evidence when browser automation applies
+
+Playwright guidance defaults:
+
+- enable video capture by default; recommend `video: 'retain-on-failure'` as the conservative template setting
+- keep `trace: 'on-first-retry'` and `screenshot: 'only-on-failure'` when the stack supports them
+- preserve videos, traces, and HTML reports as PR evidence and future wiki-sync inputs when available
 
 ## High-level architecture
 
