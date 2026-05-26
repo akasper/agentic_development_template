@@ -68,3 +68,17 @@ Read those pieces together when making process changes. A change in one of them 
 - For newly generated repositories, start with `docs/bootstrap/new-repository-checklist.md` and run `scripts/bootstrap_github.sh` (macOS/Linux/WSL) or `scripts\BootstrapGitHub.ps1` (Windows) before making project-specific changes.
 - Do not weaken tests, documentation gates, or workflow checks to make a change pass. Human review and merge authority remain outside agent authority except as defined in `AGENTS.md §Autonomous Mode`.
 - **Before opening any Feature issue that depends on an external API**, verify that `SPEC.md §External Integrations` contains an entry for that API and confirm it is reachable. If API availability is uncertain, open a Research issue first.
+
+## Interactive epic planning
+
+When a user in Copilot chat expresses intent to plan a large feature or epic, use the `interactive-epic-planning` skill (see `.agentic/skills.yml`). The complete behavior spec is in `AGENTS.md §Interactive Epic Planning` and the design documents at `docs/design/epic-planning-dialogue-flow.md` and `docs/design/conversation-to-issue-graph.md`.
+
+Quick reference:
+- Detect intent via 3-tier signal scoring; only ask the confirmation question at HIGH (≥5 points).
+- Create the Epic issue as soon as you have a name and problem statement — do not wait for full AC.
+- Run at most 8 Q&A turns; stop at 3 minimum if the user signals completion.
+- After each turn, update the Epic body and post `📝 Updated #N` in chat.
+- Create child stubs (Research → Design → Feature) as the need becomes clear; tag them `need:refinement`.
+- Before creating, check for duplicate epics (Jaccard ≥ 0.5 on title tokens).
+- Store session state in `<!-- PLATE_SESSION_STATE: {...} -->` at the end of the Epic body.
+- Post a planning summary comment when the session ends.
