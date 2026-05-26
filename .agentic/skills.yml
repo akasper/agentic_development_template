@@ -85,6 +85,22 @@ skills:
       - "linked issue or extension request"
       - "agent file with valid frontmatter"
       - "extension registry entry"
+  - id: "pr-feedback-response"
+    description: "Address actionable PR feedback from known third-party agents (Devin, OpenHands, etc.) without human intervention. Triggered by plates-address-pr-feedback.yml."
+    allowed_artifacts:
+      - "src/**"
+      - "app/**"
+      - "tests/**"
+      - "docs/**"
+      - "CURRENT.md"
+    required_evidence:
+      - "PLATES feedback trigger comment on the PR"
+      - "response to each actionable review comment"
+      - "need:human-review label if any item requires human judgment"
+    prohibited_actions:
+      - "merge own pull request"
+      - "modify AGENTS.md, SPEC.md, or workflow files without explicit approval"
+      - "change credentials, secrets, or authentication configuration"
   # PLATES-CORE:BEGIN template-sync-skill
   - id: "template-sync"
     description: "Import upstream PLATE template behavior changes while preserving downstream customizations."

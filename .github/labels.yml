@@ -1,6 +1,10 @@
 # PLATE canonical label registry.
 # Mutable planning state such as status, priority, owner, rank, target date, iteration, and release target belongs in GitHub Projects fields.
 
+- name: "Feedback Response"
+  color: "e4e669"
+  description: "Issue or PR type: PLATES-generated task or resulting PR that addresses third-party agent review feedback. Auto-created by plates-address-pr-feedback.yml."
+
 - name: "Bug"
   color: "d73a4a"
   description: "Issue or PR type: defect, regression, or incorrect behavior."
