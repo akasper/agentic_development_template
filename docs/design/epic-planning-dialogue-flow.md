@@ -194,6 +194,8 @@ If the user amends either field, the agent updates and reflects once more. After
 
 #### 3.2 Epic Issue Fields at Creation Time
 
+> **Note on multiline bodies:** When authoring `gh issue create` or `gh pr create` commands in agent scripts or docs, construct the body safely for all shells (especially PowerShell). Prefer writing the body to a temp file or using `--body-file -` with a here-string rather than embedding `\n` literals inside a single `--body "..."` argument.
+
 ```
 gh issue create \
   --title "[Epic] [name]" \
@@ -346,6 +348,8 @@ gh issue create \
   --label "Epic: [epic-slug]" \
   --label "need:refinement"
 ```
+
+> **PowerShell safety:** See AGENTS.md §"PowerShell multiline bodies" for safe construction of `--body` arguments across shells.
 
 Fields set at child creation:
 - **Title:** `[Type]: [descriptive title]`

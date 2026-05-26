@@ -358,6 +358,8 @@ Required fields for every stub:
 - `need:refinement` label
 - Body: one-line summary + `<!-- PLATES-EPIC: #<epic-number> -->`
 
+Do not create more than 3 child stubs per type without explicit user confirmation.
+
 ### Session Resumption
 
 Reconstruct state from the `PLATE_SESSION_STATE` HTML comment in the Epic body. Re-entry prompt: *"I found a planning session in progress for Epic #N. Would you like to continue from turn [X], or start over?"*
@@ -392,6 +394,8 @@ Every Feature pull request must modify `CURRENT.md`. Documentation pull requests
 See §Issue Artifact Rules for the full mapping of issue type to required artifact location.
 
 When opening pull requests through GitHub CLI, prefer an atomic command such as `gh pr create --label "Feature"` or `gh pr create --label "Documentation"`. If the PR is already open (e.g., created via the GitHub web UI or REST API), run `gh pr edit <number> --add-label "Feature"` as the very next step before any other work.
+
+**PowerShell multiline bodies:** When using `--body` with multi-line content from PowerShell, avoid embedding literal `\n` sequences inside double-quoted strings (PowerShell passes the backslashes through literally to GitHub). Prefer `--body-file -` with a PowerShell here-string (`@" ... "@`), write the body to a temporary file first, or use explicit line continuations. The same caution applies to `gh issue create --body`.
 
 **Important:** The checkboxes in the PR template body do **not** apply GitHub labels. Labels must be set explicitly via the CLI or GitHub API.
 
