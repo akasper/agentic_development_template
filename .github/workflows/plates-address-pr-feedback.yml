@@ -55,8 +55,10 @@ jobs:
 
             const isKnownAgent = (login) => {
               const lower = login.toLowerCase();
-              return configuredLogins.includes(lower) ||
-                DEFAULT_AGENT_PATTERNS.some((pattern) => pattern.test(login));
+              if (configuredLogins.length > 0) {
+                return configuredLogins.includes(lower);
+              }
+              return DEFAULT_AGENT_PATTERNS.some((pattern) => pattern.test(login));
             };
 
             let reviewer = null;
