@@ -321,8 +321,8 @@ Research and Design stubs are created before Feature and Spike stubs because Fea
 | Issue Type | Required at creation | Deferred to refinement |
 |---|---|---|
 | Epic | `title`, `body` (problem + AC skeleton), `Epic` label, `Epic: {slug}` label | Milestone, final AC, `## Child Issues` section (appended after children created) |
-| Research | `title`, `body` (question + context), `Research` label, `Epic: {slug}` label, `Closes #epic` | Detailed scope, methodology, assigned researcher |
-| Design | `title`, `body` (scope + context), `Design` label, `Epic: {slug}` label, `Closes #epic` | Constraints, artifact format, assigned designer |
+| Research | `title`, `body` (question + context), `Research` label, `Epic: {slug}` label, `need:refinement`, `Closes #epic` | Detailed scope, methodology, assigned researcher |
+| Design | `title`, `body` (scope + context), `Design` label, `Epic: {slug}` label, `need:refinement`, `Closes #epic` | Constraints, artifact format, assigned designer |
 | Feature | `title`, `body` (summary + context), `Feature` label, `Epic: {slug}` label, `need:refinement`, `Closes #epic` | Full AC, test plan, CURRENT.md update |
 | Spike | `title`, `body` (question + timebox placeholder + context), `Spike` label, `Epic: {slug}` label, `need:refinement`, `Closes #epic` | Timebox confirmation, success condition, assignee |
 
