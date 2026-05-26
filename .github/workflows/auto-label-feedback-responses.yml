@@ -10,9 +10,8 @@ name: Auto-label Feedback Response PRs
 # - They are created by automated workflows with audit trails
 #
 # Therefore, risk:low and auto-merge are safe to apply automatically without human review.
-# If a PR genuinely requires elevated risk consideration, the Feedback Response label
-# should not have been applied in the first place — or it should be removed manually
-# before merge is allowed.
+# If a PR genuinely requires elevated risk consideration, a human can apply a different
+# risk:* label and this workflow will skip the automatic labels rather than overriding it.
 
 on:
   pull_request:
@@ -33,6 +32,16 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const currentLabels = pr.labels.map(l => l.name);
+            const existingRiskLabels = currentLabels.filter((label) => /^risk:/.test(label));
+            const hasNonLowRiskLabel = existingRiskLabels.some((label) => label !== 'risk:low');
+            
+            if (hasNonLowRiskLabel) {
+              core.warning(
+                `PR #${pr.number} already has elevated risk label(s): ${existingRiskLabels.join(', ')}. ` +
+                'Skipping automatic risk:low and auto-merge labels.'
+              );
+              return;
+            }
             
             const labelsToAdd = [];
             if (!currentLabels.includes('risk:low')) {
