@@ -8,9 +8,9 @@ Every issue must carry exactly one issue type label: `Bug`, `Feature`, `Epic`, `
 
 ## Branch and Pull Request Rules
 
-Use short descriptive branch names such as `feature/onboarding-copy`, `bug/login-regression`, or `docs/current-state-audit`. Every pull request must carry exactly one PR type label: `Bug`, `Feature`, `Documentation`, or `Feedback Response`. Feature PRs must update `CURRENT.md`. `Feedback Response` PRs are PLATES-auto-generated. The PLATES workflow automatically creates both the companion `Feedback Response` issue and the closing keyword in the PR body — no manual issue link is needed, but the link will always be present and the CI closing-keyword check will pass.
+Use short descriptive branch names such as `feature/onboarding-copy`, `bug/login-regression`, or `docs/current-state-audit`. Every pull request must carry exactly one PR type label: `Bug`, `Feature`, `Documentation`, or `Feedback Response`. Feature and Bug PRs must include a closing keyword (`Closes #N`) to link the issue they resolve. `Feedback Response` PRs are PLATES-auto-generated and do not require a closing keyword; the `.github/workflows/auto-label-feedback-responses.yml` workflow automatically applies both `risk:low` and `auto-merge` labels, making them eligible for autonomous auto-merge when AUTONOMOUS_MODE is active.
 
-If a pull request is opened with GitHub CLI, include the type label in the create command itself, for example `gh pr create --label "Feature"`, instead of treating labeling as a separate best-effort follow-up step.
+If a pull request is opened with GitHub CLI, include the type label in the create command itself, for example `gh pr create --label "Feature"`, instead of treating labeling as a separate best-effort follow-up step. For non-Feedback-Response PRs, consider applying a `risk:*` label at creation time to clarify review burden for reviewers (see §Risk Assessment and Labeling in `AGENTS.md`).
 
 For batched Question triage through GitHub CLI, use `scripts/question_batch.sh` (or `scripts/QuestionBatch.ps1` on Windows) to list open Question issues quickly.
 

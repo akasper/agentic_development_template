@@ -118,6 +118,52 @@ duration: <hh:mm:ss>
 
 `Feature` and `Question` issue closures are harvested by `.github/workflows/plates-on-issue-closed.yml` and appended to `.agentic/COSTS.md`.
 
+## Risk Assessment and Labeling
+
+The `risk:*` label family communicates review burden and operational caution to humans and agents. Every PR may carry at most one `risk:*` label, selected from: `risk:low`, `risk:medium`, `risk:high`, `risk:critical`.
+
+**risk:low** - Minimal review burden and low operational impact:
+- Addresses third-party feedback or applies reviewed suggestions (Feedback Response PRs are **automatically** labeled `risk:low`)
+- Small, localized changes that do not affect API boundaries, data models, or authentication
+- Pure documentation, comment, or test-only changes that do not affect production behavior
+- Dependency version bumps that pass all CI gates
+- Formatting, naming, or cleanup changes with no semantic impact
+- Changes that provably reduce technical debt with no functional change
+
+**risk:medium** - Moderate review burden or operational caution:
+- New features behind feature flags or in non-production code paths
+- Behavioral changes to non-critical subsystems (logging, monitoring, utilities)
+- Database migrations with forward/backward compatibility; schema changes with no data loss
+- Configuration or deployment changes with straightforward rollback paths
+- Public API additions that are purely additive (no removal or breaking changes)
+
+**risk:high** - High review burden, user impact, or migration risk:
+- Behavioral changes to critical paths (auth, payment, data integrity)
+- Public API breaking changes or removals
+- Database migrations that lose data or cannot be rolled back
+- Infrastructure or deployment changes with unknown rollback procedure
+- Changes affecting multiple subsystems or cross-cutting concerns
+- Changes that modify `SPEC.md`, `CURRENT.md`, or public product claims
+
+**risk:critical** - Release, security, compliance, or data risk:
+- Security vulnerabilities (auth bypass, data exposure, injection flaws)
+- Compliance or legal changes (privacy, terms, licensing)
+- Changes affecting billing, pricing, or subscription logic
+- Customer data access, deletion, or transformation
+- Changes to `.github/CODEOWNERS`, `AGENTS.md`, or branch protection rules
+- Modifications to `.github/AUTONOMOUS_MODE` or autonomous mode eligibility criteria
+
+**When to apply risk:low:**
+- Always apply to `Feedback Response` PRs — the `.github/workflows/auto-label-feedback-responses.yml` workflow does this automatically
+- Apply to `Documentation` and `Refactoring` PRs unless they update product specification or public claims
+- Apply to test-only or CI-only PRs that do not affect deployed code
+- Apply to pure chore PRs (dependency bumps, code cleanup) when no behavior changes
+
+**When NOT to apply risk:low:**
+- If `risk:medium`, `risk:high`, or `risk:critical` is more accurate — apply the higher label instead
+- If unsure, apply `risk:medium` or ask a human reviewer to clarify
+- If the PR carries `need:human-review`, `need:security-review`, or `need:decision`, re-assess after those needs are satisfied
+
 ## Autonomous Mode
 
 Autonomous mode is an opt-in operating posture for unattended sessions (overnight runs, long-running autopilot, `/delegate` tasks) where no human reviewer is available interactively. It selectively lifts the self-merge prohibition for lightweight, low-risk PRs.
@@ -134,7 +180,7 @@ Autonomous mode is an opt-in operating posture for unattended sessions (overnigh
 
 **Eligibility criteria — all must be true for a PR to qualify:**
 
-- Labeled `risk:low`
+- Labeled `risk:low` (see §Risk Assessment and Labeling above)
 - Does not modify `AGENTS.md`, `SPEC.md`, `.github/CODEOWNERS`, or any workflow file
 - Does not add, remove, or alter credential handling, payment logic, authentication, or security controls
 - Does not carry `need:human-review` or `need:security-review`
@@ -146,6 +192,8 @@ Autonomous mode is an opt-in operating posture for unattended sessions (overnigh
 gh pr create --label "risk:low" --label "auto-merge" [other required labels] ...
 gh pr merge --auto --squash <PR_NUMBER>
 ```
+
+For `Feedback Response` PRs, the `.github/workflows/auto-label-feedback-responses.yml` workflow applies both `risk:low` and `auto-merge` labels automatically, so the above workflow call is sufficient.
 
 The `.github/workflows/auto-merge.yml` workflow also triggers on the `auto-merge` label and verifies the marker file before proceeding — providing a second gate.
 
@@ -184,11 +232,12 @@ When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR, the `
 | Stage | Expected artifact |
 |---|---|
 | Workflow fires | Issue created with `Feedback Response` label, assigned to `copilot` |
+| Auto-labeling fires | PR/issue automatically receives `risk:low` and `auto-merge` labels via `auto-label-feedback-responses.yml` |
 | Copilot addresses feedback | Commits pushed to existing PR branch; review threads resolved |
-| If a new PR is needed | PR labeled `Feedback Response`, includes `Closes #TASK_ISSUE` in body |
-| Completion | Task issue closed; original PR re-reviewed by the original feedback author |
+| If a new PR is needed | PR labeled `Feedback Response`, no closing keyword required; `risk:low` and `auto-merge` applied automatically |
+| Completion | Task issue closed; original PR re-reviewed by the original feedback author; eligible PRs auto-merge when CI passes |
 
-`Feedback Response` issues and PRs are PLATES process artifacts — they are exempt from the `Epic:` label requirement and from the `CURRENT.md` update requirement. They do require a closing issue link (`Closes #N`) because the task issue is always present. The Copilot Coding Agent is reliably triggered by issue assignment via `GITHUB_TOKEN` (a fully GitHub-native, PAT-free path). The `@copilot` mention-in-comment path is blocked for `github-actions[bot]` comments by GitHub's bot-isolation routing and should not be used for machine-to-machine invocation.
+`Feedback Response` issues and PRs are PLATES process artifacts — they are exempt from the `Epic:` label requirement, from the `Closes #N` closing keyword requirement, and from the `CURRENT.md` update requirement. They are automatically labeled `risk:low` and `auto-merge` because addressing feedback preserves the original PR's intent and is inherently low-risk. The Copilot Coding Agent is reliably triggered by issue assignment via `GITHUB_TOKEN` (a fully GitHub-native, PAT-free path). The `@copilot` mention-in-comment path is blocked for `github-actions[bot]` comments by GitHub's bot-isolation routing and should not be used for machine-to-machine invocation.
 
 **Deduplication:** The workflow posts a tracking comment containing the marker `<!-- plates-feedback-trigger:<agent> -->` on the PR after each trigger. A 10-minute cooldown prevents duplicate task issues when a single review fires multiple parallel events.
 
