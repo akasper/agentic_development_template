@@ -103,8 +103,38 @@ Every issue must close with a traceable git artifact — either a code change in
 | `Audit` | Report committed to `docs/audits/<slug>.md` | `Documentation` |
 | `Migration` | Update committed to `docs/migration/` | `Documentation` |
 | `Epic` | Wiki summary in `docs/wiki/` or epic comment summarizing child outcomes | `Documentation` |
+| `Spike` | Short findings note in `docs/research/<slug>.md` or inline issue comment | `Documentation` |
 
 When GitHub's native closing keyword (`Closes #N`, `Fixes #N`, `Resolves #N`) is present in the PR body and the PR merges to the default branch, GitHub automatically closes the linked issue. **Always include a closing keyword in the PR body, except for `Feedback Response` PRs which are exempt.** This is enforced by `.github/workflows/pr-issue-link-check.yml` (warning gate).
+
+### Spike Issues
+
+A **Spike** is a time-boxed investigation with a defined question and a hard timebox. Use Spike (not Research) when:
+- The question has a clear binary or bounded answer ("can we use X for Y?")
+- The work should be discarded or converted if it runs over the timebox
+- You need an answer to unblock a decision, not a general-purpose findings document
+
+Spike issues must include in their body:
+- `**Timebox:**` duration (e.g., "4 hours", "1 day")
+- `**Question:**` the specific question to answer
+- `**Done signal:**` what constitutes a sufficient answer
+
+Spike issues do **not** require an `Epic: short-name` label. They close with a short findings note (committed artifact or inline comment).
+
+### need:refinement Semantics
+
+The `need:refinement` label is applied to issue stubs created during interactive epic planning. It signals that the issue is intentionally incomplete and not yet ready for implementation.
+
+**Gates deferred by `need:refinement`:**
+- Acceptance criteria completeness check
+- `CURRENT.md` update requirement (the stub has no implementation yet)
+
+**Gates that are NEVER deferred, even for `need:refinement` stubs:**
+- Exactly one PLATE issue type label must be present
+- `Feature` stubs must carry exactly one `Epic: short-name` label
+- Any PR that closes the issue must include a closing keyword (`Closes #N`)
+
+Remove `need:refinement` from an issue when its AC and scope are sufficiently defined for implementation to begin. Agents may remove this label autonomously when adding full AC in a planning follow-up session.
 
 Before closing any issue (manually or via linked PR), post a final comment that includes a structured usage block:
 
