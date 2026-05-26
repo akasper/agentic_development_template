@@ -2,7 +2,7 @@
 
 - **Issue:** #82
 - **Researched by:** @copilot (agent session)
-- **Date:** 2025-07-14
+- **Date:** 2026-05-26
 - **Status:** Completed
 
 ## Research Question
@@ -333,5 +333,3 @@ Total budget: **6–8 turns**. The fast path collapses phases 1 and 2 into a sin
 This research extends the findings of `docs/research/information-goals.md` (#40), which recommended a *hybrid: form + conversation + durable profile + question backlog* architecture. The present artifact specifies the **conversational layer** of that hybrid in detail — specifically the turn structure, question design rules, and graceful degradation behavior for the guided Q&A component.
 
 The sample transcript in §6 is compatible with the PLATE Configurator agent pattern described in `.github/agents/plate-configurator.agent.md` and could be used as a reference interaction for that agent's planning mode.
-
-Closes #82
