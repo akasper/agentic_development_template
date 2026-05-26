@@ -3,7 +3,7 @@
 - **Issue:** #81
 - **Researched by:** @copilot
 - **Date:** 2026-05-26
-- **Status:** Completed
+- **Status:** Complete — awaiting human decision
 
 ## Research Question
 
