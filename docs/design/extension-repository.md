@@ -101,9 +101,9 @@ artifacts:
       to: docs/extensions/observability.md
   merge:
     - path: .agentic/extensions.yml
-      strategy: append-extension-entry
+      strategy: append-yaml-entry
     - path: .agentic/skills.yml
-      strategy: append-skill-entry
+      strategy: append-yaml-entry
     - path: .github/copilot-instructions.md
       strategy: append-section
 install:
