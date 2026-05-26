@@ -196,16 +196,17 @@ If the user amends either field, the agent updates and reflects once more. After
 
 ```
 gh issue create \
-  --title "[name]" \
+  --title "[Epic] [name]" \
   --body  "## Problem\n[problem statement]\n\n## Acceptance Criteria\n\n_To be filled during planning session._\n\n## Scope\n\n_To be filled during planning session._\n\n## Out of Scope\n\n_To be filled during planning session._\n\n## Dependencies\n\n_To be filled during planning session._\n\n## Session State\n\n<!-- PLATE_SESSION_STATE -->\nphase: planning_mode\nlast_step: threshold_gate\nchild_issues: []\n<!-- /PLATE_SESSION_STATE -->" \
   --label "Epic" \
+  --label "Epic: [epic-slug]" \
   --label "need:refinement"
 ```
 
 Fields set at creation:
 - **Title:** the confirmed name
 - **Body:** stub sections for Acceptance Criteria, Scope, Out of Scope, Dependencies, and a machine-readable `PLATE_SESSION_STATE` block
-- **Labels:** `Epic`, `need:refinement`
+- **Labels:** `Epic`, `Epic: [epic-slug]`, `need:refinement`
 
 ---
 
