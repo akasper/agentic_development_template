@@ -1,0 +1,246 @@
+# E2E Test Workflow for PLATE Template
+# Runs Playwright tests on push, PR, and manual trigger
+# Captures artifacts (videos, traces, screenshots) on failure
+# Posts test results to PRs with links to HTML report
+#
+# Documentation: docs/design/playwright-ci-design.md
+
+name: E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Nightly runs at 2 AM UTC for continuous verification
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+  pull-requests: write    # For PR comments with test results
+  checks: write           # For check runs and status reporting
+
+concurrency:
+  group: e2e-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-e2e:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Checkout repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Setup Node.js with dependency caching for faster runs
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Install ffmpeg for video/GIF processing (Phase 2 enhancement)
+      - name: Install ffmpeg
+        run: sudo apt-get install -y ffmpeg
+
+      # Install npm dependencies with deterministic lockfile
+      - name: Install dependencies
+        run: npm ci
+        env:
+          CI: true
+
+      # Install Playwright browsers and system dependencies (Chromium, Firefox, WebKit)
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # Start development server in background
+      # CI env var allows apps to detect test environment
+      - name: Start development server
+        run: npm run dev > /tmp/dev-server.log 2>&1 &
+        env:
+          CI: true
+          NODE_ENV: test
+
+      # Wait for server to be ready (max 30 seconds)
+      # Uses curl to check HTTP connectivity before running tests
+      - name: Wait for development server
+        run: |
+          echo "Waiting for dev server at http://localhost:3000..."
+          timeout 30 bash -c '
+            until curl -s http://localhost:3000 > /dev/null 2>&1; do
+              echo "Server not ready, retrying..."
+              sleep 1
+            done
+            echo "Server is ready!"
+          ' || (echo "Server failed to start"; cat /tmp/dev-server.log; exit 1)
+
+      # Run Playwright tests with CI-optimized settings
+      # Base URL can be overridden via PLAYWRIGHT_TEST_BASE_URL env var if needed
+      - name: Run Playwright tests
+        run: npx playwright test
+        env:
+          BASE_URL: 'http://localhost:3000'
+          CI: true
+          PLAYWRIGHT_JUNIT_OUTPUT_FILE: test-results/junit.xml
+
+      # Upload HTML report (always, even on success for trend tracking)
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      # Upload test results JSON for parsing in comments and dashboards
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      # Upload videos recorded on test failure for debugging
+      # See playwright.config.ts: video: 'retain-on-failure'
+      - name: Upload failure videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-videos
+          path: test-results/**/*.webm
+          retention-days: 30
+          if-no-files-found: ignore
+
+      # Upload execution traces on failure for detailed replay
+      # Traces include DOM snapshots, network events, console logs
+      - name: Upload failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/**/*.zip
+          retention-days: 30
+          if-no-files-found: ignore
+
+      # Post test summary to GitHub Step Summary for visibility in Actions logs
+      - name: Generate test summary
+        if: always()
+        run: |
+          if [ -f test-results/junit.xml ]; then
+            echo "## ✅ E2E Test Run Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Artifacts available:**" >> $GITHUB_STEP_SUMMARY
+            echo "- 📊 HTML Report (playwright-report)" >> $GITHUB_STEP_SUMMARY
+            echo "- 🎥 Test Videos (on failure)" >> $GITHUB_STEP_SUMMARY
+            echo "- 🔍 Playwright Traces (on failure)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Parse test counts from junit.xml if available
+            if command -v xmllint &> /dev/null; then
+              TOTAL=$(xmllint --xpath "count(//testcase)" test-results/junit.xml 2>/dev/null || echo "?")
+              FAILURES=$(xmllint --xpath "count(//testcase/failure)" test-results/junit.xml 2>/dev/null || echo "?")
+              echo "**Results:** $TOTAL total, $FAILURES failures" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+      # Post detailed results comment to PR
+      # Only runs on pull_request events; includes links to artifacts
+      - name: Comment PR with test results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Try to read test results JSON for statistics
+            let testStats = { passed: '?', failed: '?', skipped: '?' };
+            const resultsPath = 'test-results/junit.xml';
+            
+            if (fs.existsSync(resultsPath)) {
+              try {
+                // Parse junit.xml to extract test counts
+                const content = fs.readFileSync(resultsPath, 'utf8');
+                // Simple regex extraction (can be enhanced with XML parser)
+                const testsMatch = content.match(/tests="(\d+)"/);
+                const failuresMatch = content.match(/failures="(\d+)"/);
+                
+                if (testsMatch) testStats.passed = parseInt(testsMatch[1]);
+                if (failuresMatch) testStats.failed = parseInt(failuresMatch[1]);
+              } catch (e) {
+                console.log('Could not parse test results:', e.message);
+              }
+            }
+            
+            const status = testStats.failed === 0 || testStats.failed === '?' ? '✅' : '❌';
+            const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            const reportUrl = `${runUrl}#artifacts`;
+            
+            const comment = `${status} **E2E Test Results**
+            
+            | Metric | Value |
+            |--------|-------|
+            | Passed | ${testStats.passed} |
+            | Failed | ${testStats.failed} |
+            
+            📊 **View Results:**
+            - [GitHub Action Run](${runUrl})
+            - [Test Artifacts](${reportUrl}) — HTML report, videos, traces
+            
+            See [Playwright CI Design](../blob/${{ github.ref }}:docs/design/playwright-ci-design.md) for test architecture.`;
+            
+            try {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment,
+              });
+            } catch (error) {
+              console.log('Comment creation skipped:', error.message);
+            }
+
+  # Optional: Generate demo GIFs from test videos (Phase 2)
+  # Disabled by default; enable with 'demo' label on PR
+  process-gifs:
+    name: Generate Demo GIFs
+    needs: test-e2e
+    if: success() && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'demo')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download test videos
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-videos
+
+      - name: Convert videos to GIFs
+        run: |
+          mkdir -p tests/spike-videos
+          for video in test-results/**/*.webm; do
+            if [ -f "$video" ]; then
+              gif_name="tests/spike-videos/$(basename "$video" .webm).gif"
+              echo "Converting $video to $gif_name"
+              ffmpeg -i "$video" -vf "fps=10,scale=1280:-1:flags=lanczos" "$gif_name"
+            fi
+          done
+
+      - name: Upload generated GIFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-gifs
+          path: tests/spike-videos/**/*.gif
+          retention-days: 90
+          if-no-files-found: ignore
