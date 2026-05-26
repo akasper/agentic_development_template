@@ -77,6 +77,8 @@ planning_session:
 
 #### `session_state` transitions
 
+`planning_mode` is the pre-creation conversational state where the agent is still gathering and confirming Epic details before `gh issue create` runs.
+
 ```
 planning_mode
     │  (epic_name and problem_statement confirmed)
@@ -352,7 +354,7 @@ The `need:refinement` label is removed by a **human** after they have reviewed a
 
 Every child issue body MUST contain either:
 
-- `Closes #{epic_number}` (preferred) — creates a native cross-reference in the Epic timeline. **Note:** GitHub only processes closing keywords in PR bodies and commit messages, not in issue bodies. In child issue bodies, this keyword is used only as a navigation cross-reference and MUST NOT be copied into a child implementation PR body, because that would prematurely close the Epic. Child implementation PRs should instead use `Closes #{child_issue_number}`; the Epic is closed separately after all child work is complete. **OR**
+- `Closes #{epic_number}` (preferred) — creates a native cross-reference in the Epic timeline. **Note:** GitHub only processes closing keywords in PR bodies and commit messages, not in issue bodies. In child issue bodies, this keyword is used only as a navigation cross-reference. It MUST NOT be copied into a child implementation PR body, because that would prematurely close the Epic. Child implementation PRs should instead use `Closes #{child_issue_number}`; the Epic is closed separately after all child work is complete. **OR**
 - `<!-- PLATES-EPIC: #{epic_number} -->` — used only when the issue does not directly close the Epic (e.g. a Research stub whose findings feed a Design issue that closes the Epic). The HTML comment preserves machine-readable traceability even if GitHub's cross-reference is absent.
 
 Both forms may coexist. The preferred pattern for most stubs is the `Closes` keyword.

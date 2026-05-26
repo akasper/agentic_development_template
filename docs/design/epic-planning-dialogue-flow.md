@@ -344,13 +344,13 @@ gh issue create \
   --body  "## Problem\n[problem statement copied from Epic]\n\n## Parent Epic\nCloses #[Epic N]\n\n## Notes\n_Stub created during Epic planning session. Needs refinement._" \
   --label "[Research|Design|Feature]" \
   --label "Epic: [epic-slug]" \
-  [--label "need:refinement" only when [type] is Feature]
+  --label "need:refinement"   # Include only when [type] is Feature
 ```
 
 Fields set at child creation:
 - **Title:** `[Type]: [descriptive title]`
 - **Body:** Problem statement copied from Epic body, parent Epic reference, stub note
-- **Labels:** issue-type label (`Research`, `Design`, or `Feature`), `Epic: [slug]`; add `need:refinement` only for `Feature` stubs
+- **Labels:** issue-type label (`Research`, `Design`, or `Feature`), `Epic: [slug]`; include `need:refinement` only for `Feature` stubs
 
 After each child is created, the agent updates the Epic body's `PLATE_SESSION_STATE` block with the new issue number.
 
