@@ -31,6 +31,7 @@ last_verified_commit: "pending-merge"
 | Default onboarding question set | Implemented | #27 | Pending | `.github/agents/plate-configurator.agent.md`, `docs/design/default-questions.md`, repository diff review | `.github/agents/plate-configurator.agent.md`, `docs/design/default-questions.md`, `CURRENT.md` | Unreleased | 2026-05-26 |
 | Issue cost tracking | Implemented | #31 | Pending | `.github/workflows/cost-tracking.yml` — fires on `issues: [closed]`; finds linked PRs via closing keywords; sums CI run durations; posts idempotent cost summary comment | `CURRENT.md` | Unreleased | 2026-05-26 |
 | GitHub platform monitor | Implemented | #32 | Pending | `.github/workflows/platform-monitor.yml` — weekly scheduled workflow that creates a `Research` issue assigning Copilot to scan GitHub changelog for new capabilities | `CURRENT.md` | Unreleased | 2026-05-26 |
+| Spike issue type + need:refinement quality gates | Implemented | #86 | This PR | `.github/labels.yml`, `.github/workflows/label-check.yml`, `AGENTS.md §Spike Issues + §need:refinement Semantics`, `docs/bootstrap/new-repository-checklist.md` | `AGENTS.md` | Unreleased | 2026-05-27 |
 
 ## Operational Behavior
 

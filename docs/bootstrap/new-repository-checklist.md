@@ -25,6 +25,10 @@ Both scripts require only `gh` (GitHub CLI) and `git`. They cover the repeatable
 | Step | Why It Matters | Covered by Helper |
 |---|---|---|
 | Sync canonical PLATE labels from `.github/labels.yml` | The label taxonomy drives routing, enforcement, and review semantics. | Yes |
+
+After syncing labels, two labels deserve attention:
+- **`need:refinement`** — Created by the bootstrap script. Applied automatically to epic planning stubs; no manual action needed unless you are pre-creating stub issues before running the planner.
+- **`Spike`** — Created by the bootstrap script. Use for time-boxed investigations (see `AGENTS.md §Spike Issues`).
 | Remove conflicting default GitHub labels | Default labels such as `documentation` and `enhancement` create drift from the canonical PLATE taxonomy. | Yes |
 | Replace `@PLATE_REPO_OWNER` in `.github/CODEOWNERS` | Placeholder owners break review routing and code-owner protection. | Yes |
 | Enable delete-branch-on-merge | Keeps the repository clean after reviewed work lands. | Yes |
