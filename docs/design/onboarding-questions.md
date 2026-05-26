@@ -31,7 +31,7 @@ Use a **staged onboarding conversation** driven by ordered information goals. Ea
 | 2 | Team and operating-model setup | Project fields, notification defaults, risk posture, workflow expectations |
 | 3 | Product definition | Initial `SPEC.md` direction, first epics, default Question backlog |
 | 4 | Technical and operational context | CI scaffolding, stack choices, cost and compliance defaults |
-| 5 | First feature implementation | Concrete issue acceptance criteria, testing guidance, and reviewer routing |
+| 5 | Cost, governance, and operational constraints | Cost posture, compliance defaults, artifact retention, and escalation routing |
 
 ### Persistence model
 
