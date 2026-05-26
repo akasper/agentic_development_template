@@ -256,6 +256,13 @@ When introducing new reusable process guidance, wrap it in a `PLATES-CORE` block
 
 The **Sync to Wiki on Merge** workflow is opt-in. Agents should not enable broad wiki writes without human approval. Prefer scoped page updates, provenance comments, auditable commits, and reversible changes. If wiki synchronization is requested but not configured, add `need:wiki-sync` and escalate.
 
+## Template Integrity Rules
+
+- Keep `.github/copilot-instructions.md` present and aligned with the repository's real CI/runtime commands.
+- Keep `.github/workflows/ci.yml` pointed at executable validation logic (`scripts/validate_plate_repo.sh`) rather than placeholder echo steps.
+- For repositories that add runtime manifests, replace placeholder CI/docs claims in the same PR that introduces the runtime.
+- Use repository-local temporary paths for scripts and validation helpers; avoid platform-specific assumptions such as `/tmp`.
+
 ## Escalation Rules
 
 Escalate to a human when product intent is ambiguous, acceptance criteria conflict, a required label is missing and cannot be inferred, a workflow would need to be weakened, a secret or permission is required, a public claim might change, or the agent cannot produce the required evidence.
