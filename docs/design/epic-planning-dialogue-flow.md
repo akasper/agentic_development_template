@@ -344,8 +344,10 @@ gh issue create \
   --body  "## Problem\n[problem statement copied from Epic]\n\n## Parent Epic\nCloses #[Epic N]\n\n## Notes\n_Stub created during Epic planning session. Needs refinement._" \
   --label "[Research|Design|Feature]" \
   --label "Epic: [epic-slug]" \
-  --label "need:refinement"   # Include only when [type] is Feature
+  --label "need:refinement"
 ```
+
+Include the `--label "need:refinement"` flag only when `[type]` is `Feature`.
 
 Fields set at child creation:
 - **Title:** `[Type]: [descriptive title]`
