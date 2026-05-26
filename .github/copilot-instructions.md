@@ -2,7 +2,9 @@
 
 ## Build, test, and lint
 
-This template does not define a local build, lint, or test toolchain yet. `.github\workflows\ci.yml` still contains a scaffold step that only echoes `"Tests would run here"`, but downstream PLATE repositories should assume **Playwright** as the default E2E framework unless they document a better stack-specific alternative.
+This template enforces baseline process validation through `bash scripts/validate_plate_repo.sh .` in `.github\workflows\ci.yml`.
+
+Downstream PLATE repositories **must replace placeholder validation with concrete stack commands** once runtime manifests are present (`package.json`, `pyproject.toml`, `wally.toml`, `default.project.json`, etc.). The validator fails CI if runtime manifests exist but docs/CI still claim the placeholder template state.
 
 When a downstream project adds a runtime or package manager, prefer the real project commands over inventing new ones, and update this file with:
 
@@ -10,6 +12,12 @@ When a downstream project adds a runtime or package manager, prefer the real pro
 - the single-test command for that stack
 - any build and lint commands that CI actually uses
 - the default Playwright command and artifact locations for E2E evidence when browser automation applies
+
+For local setup preflight, run:
+
+- `bash scripts/check_toolchain.sh .` (macOS/Linux/WSL)
+- `.\scripts\CheckToolchain.ps1 -Root .` (Windows PowerShell)
+- `.\scripts\ValidatePlateRepo.ps1 -Root .` (Windows PowerShell parity check for `validate_plate_repo.sh`)
 
 Playwright guidance defaults:
 
