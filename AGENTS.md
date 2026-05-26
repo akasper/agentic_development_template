@@ -234,10 +234,10 @@ When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR, the `
 | Workflow fires | Issue created with `Feedback Response` label, assigned to `copilot` |
 | Auto-labeling fires | PR/issue automatically receives `risk:low` and `auto-merge` labels via `auto-label-feedback-responses.yml` |
 | Copilot addresses feedback | Commits pushed to existing PR branch; review threads resolved |
-| If a new PR is needed | PR labeled `Feedback Response`, includes `Closes #TASK_ISSUE` in body; `risk:low` and `auto-merge` applied automatically |
+| If a new PR is needed | PR labeled `Feedback Response`, no closing keyword required; `risk:low` and `auto-merge` applied automatically |
 | Completion | Task issue closed; original PR re-reviewed by the original feedback author; eligible PRs auto-merge when CI passes |
 
-`Feedback Response` issues and PRs are PLATES process artifacts — they are exempt from the `Epic:` label requirement and from the `CURRENT.md` update requirement. They do require a closing issue link (`Closes #N`) because the task issue is always present. They are automatically labeled `risk:low` and `auto-merge` because addressing feedback preserves the original PR's intent and is inherently low-risk. The Copilot Coding Agent is reliably triggered by issue assignment via `GITHUB_TOKEN` (a fully GitHub-native, PAT-free path). The `@copilot` mention-in-comment path is blocked for `github-actions[bot]` comments by GitHub's bot-isolation routing and should not be used for machine-to-machine invocation.
+`Feedback Response` issues and PRs are PLATES process artifacts — they are exempt from the `Epic:` label requirement, from the `Closes #N` closing keyword requirement, and from the `CURRENT.md` update requirement. They are automatically labeled `risk:low` and `auto-merge` because addressing feedback preserves the original PR's intent and is inherently low-risk. The Copilot Coding Agent is reliably triggered by issue assignment via `GITHUB_TOKEN` (a fully GitHub-native, PAT-free path). The `@copilot` mention-in-comment path is blocked for `github-actions[bot]` comments by GitHub's bot-isolation routing and should not be used for machine-to-machine invocation.
 
 **Deduplication:** The workflow posts a tracking comment containing the marker `<!-- plates-feedback-trigger:<agent> -->` on the PR after each trigger. A 10-minute cooldown prevents duplicate task issues when a single review fires multiple parallel events.
 
