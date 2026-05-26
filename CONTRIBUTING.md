@@ -4,11 +4,11 @@ This repository uses PLATE to keep human judgment, agent execution, and durable 
 
 ## Issue Rules
 
-Every issue must carry exactly one issue type label: `Bug`, `Feature`, `Epic`, `Research`, `Design`, `Question`, `Audit`, or `Migration`. Feature and Epic issues must also carry exactly one `Epic: short-name` label. Question issues are information goals and are not tied to an Epic label. Mutable planning state such as status, priority, target date, owner, iteration, and release target belongs in GitHub Projects fields.
+Every issue must carry exactly one issue type label: `Bug`, `Feature`, `Epic`, `Research`, `Design`, `Question`, `Audit`, `Migration`, or `Feedback Response`. Feature and Epic issues must also carry exactly one `Epic: short-name` label. Question issues are information goals and are not tied to an Epic label. `Feedback Response` issues are PLATES-auto-generated and are also exempt from the Epic requirement. Mutable planning state such as status, priority, target date, owner, iteration, and release target belongs in GitHub Projects fields.
 
 ## Branch and Pull Request Rules
 
-Use short descriptive branch names such as `feature/onboarding-copy`, `bug/login-regression`, or `docs/current-state-audit`. Every pull request must carry exactly one PR type label: `Bug`, `Feature`, or `Documentation`. Feature PRs must update `CURRENT.md`.
+Use short descriptive branch names such as `feature/onboarding-copy`, `bug/login-regression`, or `docs/current-state-audit`. Every pull request must carry exactly one PR type label: `Bug`, `Feature`, `Documentation`, or `Feedback Response`. Feature PRs must update `CURRENT.md`. `Feedback Response` PRs are PLATES-auto-generated and do not require an issue link.
 
 If a pull request is opened with GitHub CLI, include the type label in the create command itself, for example `gh pr create --label "Feature"`, instead of treating labeling as a separate best-effort follow-up step.
 
