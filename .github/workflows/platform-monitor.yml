@@ -38,6 +38,8 @@ jobs:
             const today = new Date().toISOString().split('T')[0];
             const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
+            const forceCheck = String(context.payload.inputs?.force_check) === 'true';
+
             // Check if a monitor issue was already created this week (deduplication)
             const recentIssues = await github.paginate(
               github.rest.issues.listForRepo,
@@ -51,7 +53,7 @@ jobs:
               }
             );
             const alreadyCreated = recentIssues.some(i =>
-              i.title.includes('GitHub platform monitor') && !context.payload.inputs?.force_check
+              i.title.includes('GitHub platform monitor') && !forceCheck
             );
             if (alreadyCreated) {
               core.info('Platform monitor issue already created this week — skipping.');
