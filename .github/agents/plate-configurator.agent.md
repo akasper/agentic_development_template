@@ -31,7 +31,7 @@ Ask the user these default onboarding questions in order:
 - How should PLATE notify or escalate to humans? (GitHub only, email, chat summary, daily digest)
 - How budget-sensitive is the project? (prototype, moderate spend, strict cost cap)
 - What testing posture should PLATE assume by default?
-- What first Epic or workflow should PLATE help define next?
+- What first Epic and first Feature should PLATE help define next?
 
 If the user cannot answer one of these yet, note it as a follow-up information goal instead of blocking the whole setup.
 

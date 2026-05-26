@@ -30,7 +30,8 @@ Use a **staged onboarding conversation** driven by ordered information goals. Ea
 | 1 | First repository setup | Repository bootstrap guidance, labels, base docs, recommended extensions |
 | 2 | Team and operating-model setup | Project fields, notification defaults, risk posture, workflow expectations |
 | 3 | Product definition | Initial `SPEC.md` direction, first epics, default Question backlog |
-| 4 | First feature implementation | Concrete issue acceptance criteria, testing guidance, and reviewer routing |
+| 4 | Technical and operational context | CI scaffolding, stack choices, cost and compliance defaults |
+| 5 | First feature implementation | Concrete issue acceptance criteria, testing guidance, and reviewer routing |
 
 ### Persistence model
 
