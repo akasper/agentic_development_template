@@ -68,7 +68,7 @@ planning_session:
   spikes: []                   # Items flagged for Spike (time-boxed exploration).
 
   # Session lifecycle
-  session_state: string        # BUILDING_EPIC | BUILDING_CHILDREN | COMPLETE | PAUSED
+  session_state: string        # planning_mode | building_epic | building_children | complete | paused | abandoned
   github_epic_number: int      # Null until Epic issue is created.
 
   # Created issue registry — populated during issue-creation phase
@@ -78,16 +78,20 @@ planning_session:
 #### `session_state` transitions
 
 ```
-BUILDING_EPIC
+planning_mode
     │  (epic_name and problem_statement confirmed)
     ▼
-BUILDING_CHILDREN
+building_epic
+    │  (epic created)
+    ▼
+building_children
     │  (all stubs created)
     ▼
-COMPLETE
+complete
 
-Any state ──► PAUSED  (user ends session; serialise document)
-PAUSED      ──► BUILDING_EPIC | BUILDING_CHILDREN  (session resumed)
+Any state ──► paused     (user ends session; serialise document)
+Any state ──► abandoned  (user explicitly cancels planning)
+paused    ──► building_epic | building_children  (session resumed)
 ```
 
 ---
@@ -348,7 +352,7 @@ The `need:refinement` label is removed by a **human** after they have reviewed a
 
 Every child issue body MUST contain either:
 
-- `Closes #{epic_number}` (preferred) — creates a native cross-reference in the Epic timeline. **Note:** GitHub only processes closing keywords in PR bodies and commit messages, not in issue bodies. When placed in a child issue body, this keyword serves as (1) a navigation cross-reference and (2) a template hint — agents and humans implementing the child issue should copy this keyword into the implementing PR body, where GitHub will then automatically close the issue when the PR merges to the default branch. **OR**
+- `Closes #{epic_number}` (preferred) — creates a native cross-reference in the Epic timeline. **Note:** GitHub only processes closing keywords in PR bodies and commit messages, not in issue bodies. In child issue bodies, this keyword is used only as a navigation cross-reference and MUST NOT be copied into a child implementation PR body, because that would prematurely close the Epic. Child implementation PRs should instead use `Closes #{child_issue_number}`; the Epic is closed separately after all child work is complete. **OR**
 - `<!-- PLATES-EPIC: #{epic_number} -->` — used only when the issue does not directly close the Epic (e.g. a Research stub whose findings feed a Design issue that closes the Epic). The HTML comment preserves machine-readable traceability even if GitHub's cross-reference is absent.
 
 Both forms may coexist. The preferred pattern for most stubs is the `Closes` keyword.
