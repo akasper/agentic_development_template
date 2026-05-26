@@ -17,6 +17,7 @@ REMOVE_DEFAULT_LABELS=false
 SET_DELETE_BRANCH_ON_MERGE=false
 PROTECT_BRANCH=""
 INIT_WIKI=false
+SKIP_RUNTIME_TOOLCHAIN_CHECK=false
 
 DEFAULT_LABELS_TO_REMOVE=(
     "bug"
@@ -42,6 +43,8 @@ Options:
   --set-delete-branch-on-merge  Enable delete-branch-on-merge
   --protect-branch BRANCH       Apply conservative baseline protection to BRANCH
   --init-wiki                   Initialize the wiki from docs/wiki/Home.md
+  --skip-runtime-toolchain-check
+                                Skip runtime-aware local toolchain preflight
   -h, --help                    Show this help message
 EOF
     exit 1
@@ -56,6 +59,7 @@ while [[ $# -gt 0 ]]; do
         --set-delete-branch-on-merge) SET_DELETE_BRANCH_ON_MERGE=true; shift ;;
         --protect-branch) PROTECT_BRANCH="$2"; shift 2 ;;
         --init-wiki) INIT_WIKI=true; shift ;;
+        --skip-runtime-toolchain-check) SKIP_RUNTIME_TOOLCHAIN_CHECK=true; shift ;;
         -h|--help) usage ;;
         *) echo "Unknown argument: $1" >&2; usage ;;
     esac
@@ -75,6 +79,10 @@ if [[ ! -f "$LABELS_PATH" ]]; then
 fi
 
 gh auth status
+
+if ! $SKIP_RUNTIME_TOOLCHAIN_CHECK; then
+    bash "$LOCAL_REPO/scripts/check_toolchain.sh" "$LOCAL_REPO"
+fi
 
 # parse_labels outputs "name|color|description" for each label entry in labels.yml.
 parse_labels() {
@@ -109,8 +117,10 @@ LABEL_COUNT=0
 CANONICAL_NAMES=()
 
 # Fetch all existing labels once as "lowercase|actualname" pairs.
-EXISTING_LABELS_FILE=$(mktemp)
-trap 'rm -f "$EXISTING_LABELS_FILE"' EXIT
+TEMP_DIR="$LOCAL_REPO/.agentic/tmp/bootstrap"
+mkdir -p "$TEMP_DIR"
+EXISTING_LABELS_FILE="$TEMP_DIR/existing-labels-$$.txt"
+trap 'rm -f "$EXISTING_LABELS_FILE"; if [[ -n "${GIT_ASKPASS_SCRIPT:-}" ]]; then rm -f "$GIT_ASKPASS_SCRIPT"; fi; if [[ -n "${wiki_dir:-}" ]]; then rm -rf "$wiki_dir"; fi' EXIT
 
 gh label list --repo "$REPO" --limit 200 --json name \
     --jq '.[] | ((.name | ascii_downcase) + "|" + .name)' \
@@ -218,10 +228,10 @@ if $INIT_WIKI; then
     author_email=$(gh api user --jq '.email // (.login + "@users.noreply.github.com")')
     token=$(gh auth token)
 
-    wiki_dir=$(mktemp -d)
+    wiki_dir="$TEMP_DIR/wiki-$$"
+    mkdir -p "$wiki_dir"
     clone_url="https://github.com/${REPO}.wiki.git"
-    GIT_ASKPASS_SCRIPT=$(mktemp)
-    trap 'rm -rf "$wiki_dir"; rm -f "$EXISTING_LABELS_FILE" "$GIT_ASKPASS_SCRIPT"' EXIT
+    GIT_ASKPASS_SCRIPT="$TEMP_DIR/git-askpass-$$.sh"
     printf "#!/bin/sh\necho '%s'\n" "$token" > "$GIT_ASKPASS_SCRIPT"
     chmod +x "$GIT_ASKPASS_SCRIPT"
     export GIT_ASKPASS="$GIT_ASKPASS_SCRIPT"

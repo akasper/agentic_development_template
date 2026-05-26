@@ -105,7 +105,7 @@ Every issue must close with a traceable git artifact — either a code change in
 | `Epic` | Wiki summary in `docs/wiki/` or epic comment summarizing child outcomes | `Documentation` |
 | `Spike` | Short findings note in `docs/research/<slug>.md` or inline issue comment | `Documentation` |
 
-When GitHub's native closing keyword (`Closes #N`, `Fixes #N`, `Resolves #N`) is present in the PR body and the PR merges to the default branch, GitHub automatically closes the linked issue. **Always include a closing keyword in the PR body.** This is enforced by `.github/workflows/pr-issue-link-check.yml` (warning gate).
+When GitHub's native closing keyword (`Closes #N`, `Fixes #N`, `Resolves #N`) is present in the PR body and the PR merges to the default branch, GitHub automatically closes the linked issue. **Always include a closing keyword in the PR body, except for `Feedback Response` PRs which are exempt.** This is enforced by `.github/workflows/pr-issue-link-check.yml` (warning gate).
 
 ### Spike Issues
 
@@ -148,6 +148,52 @@ duration: <hh:mm:ss>
 
 `Feature` and `Question` issue closures are harvested by `.github/workflows/plates-on-issue-closed.yml` and appended to `.agentic/COSTS.md`.
 
+## Risk Assessment and Labeling
+
+The `risk:*` label family communicates review burden and operational caution to humans and agents. Every PR may carry at most one `risk:*` label, selected from: `risk:low`, `risk:medium`, `risk:high`, `risk:critical`.
+
+**risk:low** - Minimal review burden and low operational impact:
+- Addresses third-party feedback or applies reviewed suggestions (Feedback Response PRs are **automatically** labeled `risk:low`)
+- Small, localized changes that do not affect API boundaries, data models, or authentication
+- Pure documentation, comment, or test-only changes that do not affect production behavior
+- Dependency version bumps that pass all CI gates
+- Formatting, naming, or cleanup changes with no semantic impact
+- Changes that provably reduce technical debt with no functional change
+
+**risk:medium** - Moderate review burden or operational caution:
+- New features behind feature flags or in non-production code paths
+- Behavioral changes to non-critical subsystems (logging, monitoring, utilities)
+- Database migrations with forward/backward compatibility; schema changes with no data loss
+- Configuration or deployment changes with straightforward rollback paths
+- Public API additions that are purely additive (no removal or breaking changes)
+
+**risk:high** - High review burden, user impact, or migration risk:
+- Behavioral changes to critical paths (auth, payment, data integrity)
+- Public API breaking changes or removals
+- Database migrations that lose data or cannot be rolled back
+- Infrastructure or deployment changes with unknown rollback procedure
+- Changes affecting multiple subsystems or cross-cutting concerns
+- Changes that modify `SPEC.md`, `CURRENT.md`, or public product claims
+
+**risk:critical** - Release, security, compliance, or data risk:
+- Security vulnerabilities (auth bypass, data exposure, injection flaws)
+- Compliance or legal changes (privacy, terms, licensing)
+- Changes affecting billing, pricing, or subscription logic
+- Customer data access, deletion, or transformation
+- Changes to `.github/CODEOWNERS`, `AGENTS.md`, or branch protection rules
+- Modifications to `.github/AUTONOMOUS_MODE` or autonomous mode eligibility criteria
+
+**When to apply risk:low:**
+- Always apply to `Feedback Response` PRs — the `.github/workflows/auto-label-feedback-responses.yml` workflow does this automatically
+- Apply to `Documentation` and `Refactoring` PRs unless they update product specification or public claims
+- Apply to test-only or CI-only PRs that do not affect deployed code
+- Apply to pure chore PRs (dependency bumps, code cleanup) when no behavior changes
+
+**When NOT to apply risk:low:**
+- If `risk:medium`, `risk:high`, or `risk:critical` is more accurate — apply the higher label instead
+- If unsure, apply `risk:medium` or ask a human reviewer to clarify
+- If the PR carries `need:human-review`, `need:security-review`, or `need:decision`, re-assess after those needs are satisfied
+
 ## Autonomous Mode
 
 Autonomous mode is an opt-in operating posture for unattended sessions (overnight runs, long-running autopilot, `/delegate` tasks) where no human reviewer is available interactively. It selectively lifts the self-merge prohibition for lightweight, low-risk PRs.
@@ -164,7 +210,7 @@ Autonomous mode is an opt-in operating posture for unattended sessions (overnigh
 
 **Eligibility criteria — all must be true for a PR to qualify:**
 
-- Labeled `risk:low`
+- Labeled `risk:low` (see §Risk Assessment and Labeling above)
 - Does not modify `AGENTS.md`, `SPEC.md`, `.github/CODEOWNERS`, or any workflow file
 - Does not add, remove, or alter credential handling, payment logic, authentication, or security controls
 - Does not carry `need:human-review` or `need:security-review`
@@ -176,6 +222,8 @@ Autonomous mode is an opt-in operating posture for unattended sessions (overnigh
 gh pr create --label "risk:low" --label "auto-merge" [other required labels] ...
 gh pr merge --auto --squash <PR_NUMBER>
 ```
+
+For `Feedback Response` PRs, the `.github/workflows/auto-label-feedback-responses.yml` workflow applies both `risk:low` and `auto-merge` labels automatically, so the above workflow call is sufficient.
 
 The `.github/workflows/auto-merge.yml` workflow also triggers on the `auto-merge` label and verifies the marker file before proceeding — providing a second gate.
 
@@ -195,7 +243,7 @@ gh api -X PUT repos/OWNER/REPO/actions/permissions/workflow \
 
 ## Third-Party Agent Feedback
 
-When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR, the `.github/workflows/plates-address-pr-feedback.yml` workflow creates a GitHub issue titled `[PLATES] Address @<agent> feedback on PR #N` and assigns it to `copilot`. The Copilot Coding Agent picks up the issue and should:
+When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR that is **not** already labeled `Feedback Response`, the `.github/workflows/plates-address-pr-feedback.yml` workflow posts a structured `@copilot` trigger comment directly on that same PR. The automation uses `COPILOT_TRIGGER_PAT` (preferred) with fallback to `GITHUB_TOKEN`, applies a dedupe marker, and intentionally avoids creating a new issue or opening a separate PR. `Feedback Response` PRs are already in the dedicated response lane and are skipped by that workflow. The Copilot Coding Agent should:
 
 1. Review all open inline comments and the overall review body from the named reviewer on the linked PR
 2. For any comment that includes a GitHub code suggestion (` ```suggestion ` block): apply it directly as a commit **unless** the suggestion introduces a bug or relies on a false assumption — if you skip a suggestion, reply to that thread with a brief explanation
@@ -205,24 +253,121 @@ When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR, the `
    mutation { resolveReviewThread(input: { threadId: "THREAD_NODE_ID" }) { thread { isResolved } } }
    ```
    To find `THREAD_NODE_ID` for a given comment, query `repository.pullRequest.reviewThreads` and match on `comments.nodes.databaseId`.
-5. **Push all changes to the existing PR branch listed in the issue body** — do not open a new PR
+5. **Push all changes to the existing PR branch** — do not open a new issue or a new PR for the feedback response
 6. For items requiring human judgment (credentials, architectural decisions, security changes), add `need:human-review` to the PR and leave a comment identifying what is blocked
-7. Close the task issue once all feedback is addressed and changes are pushed
 
 **Lifecycle contract for `Feedback Response` items:**
 
 | Stage | Expected artifact |
 |---|---|
-| Workflow fires | Issue created with `Feedback Response` label, assigned to `copilot` |
-| Copilot addresses feedback | Commits pushed to existing PR branch; review threads resolved |
-| If a new PR is needed | PR labeled `Feedback Response`, includes `Closes #TASK_ISSUE` in body |
-| Completion | Task issue closed; original PR re-reviewed by the original feedback author |
+| Workflow fires | Trigger comment posted on the existing PR (`<!-- plates-feedback-trigger:<agent> -->` + `@copilot` instructions) |
+| Copilot addresses feedback | Commits pushed to the same PR branch; review threads resolved |
+| Escalation | `need:human-review` label + blocking comment when human judgment is required |
+| Completion | Original PR is re-reviewed by the feedback author and merged through normal checks |
 
-`Feedback Response` issues and PRs are PLATES process artifacts — they are exempt from the `Epic:` label requirement and from the `CURRENT.md` update requirement. They do require a closing issue link (`Closes #N`) because the task issue is always present. The Copilot Coding Agent is reliably triggered by issue assignment via `GITHUB_TOKEN` (a fully GitHub-native, PAT-free path). The `@copilot` mention-in-comment path is blocked for `github-actions[bot]` comments by GitHub's bot-isolation routing and should not be used for machine-to-machine invocation.
+`Feedback Response` labels remain available process metadata, but this workflow no longer creates feedback-task issues or follow-up response PRs. Feedback is addressed inline on the original PR branch.
 
-**Deduplication:** The workflow posts a tracking comment containing the marker `<!-- plates-feedback-trigger:<agent> -->` on the PR after each trigger. A 10-minute cooldown prevents duplicate task issues when a single review fires multiple parallel events.
+**Deduplication:** The workflow posts a tracking comment containing the marker `<!-- plates-feedback-trigger:<agent> -->` on the PR after each trigger. A 10-minute cooldown prevents duplicate Copilot trigger comments when a single review fires multiple parallel events.
 
-**Configuration:** Set the `PLATE_PR_FEEDBACK_AGENTS` repository variable to a comma-separated list of GitHub logins whose feedback should be auto-addressed (e.g., `devin-ai-integration[bot],openhands-agent`). When the variable is absent, the workflow matches common agent login patterns automatically.
+**Configuration:** Set the `PLATE_PR_FEEDBACK_AGENTS` repository variable to a comma-separated list of GitHub logins whose feedback should be auto-addressed (e.g., `devin-ai-integration[bot],openhands-agent`). Set `COPILOT_TRIGGER_PAT` (classic PAT with `repo` scope) for reliable `@copilot` routing from Actions. When the variable is absent, the workflow matches common agent login patterns automatically.
+
+<!-- PLATES-CORE:BEGIN interactive-epic-planning -->
+## Interactive Epic Planning
+
+When a user expresses intent to plan a new epic, offer a guided Q&A session that extracts requirements and creates the Epic issue and child stubs incrementally. This workflow applies in Copilot chat. MCP and CLI surfaces are reserved for Phase 2.
+
+### Intent Detection
+
+Evaluate incoming messages against a 3-tier signal system:
+
+| Tier | Score | Action |
+|---|---|---|
+| HIGH | ≥ 5 pts | Ask the confirmation question immediately |
+| MEDIUM | 3–4 pts | Watch for a follow-up trigger in the next turn; do not interrupt |
+| LOW | ≤ 2 pts | Ignore; do not interrupt the conversation |
+
+Signal weights (cumulative): "plan" or "epic" keyword (+2), explicit "feature" or "capability" keyword (+1), question phrasing or "what would it take" (+1), "breaking down" or "scoping" phrasing (+1), scope-size language ("big", "large", "multi-week") (+1), explicit request ("let's create an epic") (+2).
+
+Confirmation question: *"It sounds like you want to plan a new epic. Should I start a structured planning session? I'll ask a few questions and create the Epic issue and child stubs on GitHub as we go."*
+
+If the user declines, drop to MEDIUM watch state. Do not ask again in the same conversation unless the user re-initiates.
+
+### Minimum Creation Threshold
+
+Create the Epic GitHub issue as soon as you have:
+- A name (title) for the epic
+- A one-sentence problem statement
+
+Do not wait for full AC or scope before creating. Use `need:refinement` on child stubs.
+
+### Duplicate Detection
+
+Before creating, search for open Epic issues with similar titles:
+
+```bash
+gh issue list --repo OWNER/REPO --label Epic --state open --json number,title
+```
+
+Compute Jaccard similarity on title tokens. If any result scores ≥ 0.5, warn the user and offer:
+1. Add child issues to the existing Epic instead
+2. Create a new Epic anyway (distinct scope)
+3. Cancel and open the existing Epic for review
+
+### Q&A Phase
+
+Run at most 8 turns. Each turn = one agent question + one user answer.
+
+**Acceptance criteria arc (turns 1–3):**
+1. "What does success look like when this epic is done?"
+2. Probe: "What's the most important part of that — what has to work for this to be useful?"
+3. Anchor: "How would you know it's truly complete — what's the 'done' signal?"
+
+**Scope arc (turns 4–6):**
+4. "What's explicitly in scope for this epic?"
+5. "What are you explicitly NOT trying to solve with this epic?"
+6. "Are there any epics, issues, or external changes this depends on?"
+
+**Fast path:** If the user says "that's enough" or "I'll fill in the rest," stop at 3 turns minimum.
+
+### Incremental Issue Updates
+
+After each Q&A turn, update the Epic issue body using `gh issue edit`:
+
+```bash
+gh issue edit <NUMBER> --body-file -
+```
+
+Store session state in an HTML comment at the end of the body:
+
+```html
+<!-- PLATE_SESSION_STATE: {"turn": 3, "ac": [...], "scope_in": [...], "scope_out": [...]} -->
+```
+
+Post a `📝 Updated #N` signal in the chat to confirm each update.
+
+### Progressive Child-Issue Creation
+
+Create child stubs in this order: Research → Design → Feature. Create each stub as soon as the need is clear — do not wait until the end of the session.
+
+Required fields for every stub:
+- Title
+- Type label (`Research`, `Design`, or `Feature`)
+- Epic label (`Epic: <slug>`)
+- `need:refinement` label
+- Body: one-line summary + `<!-- PLATES-EPIC: #<epic-number> -->`
+
+### Session Resumption
+
+Reconstruct state from the `PLATE_SESSION_STATE` HTML comment in the Epic body. Re-entry prompt: *"I found a planning session in progress for Epic #N. Would you like to continue from turn [X], or start over?"*
+
+### Completion
+
+When the session ends (turn budget exhausted or user signals done), post a planning summary comment on the Epic issue listing:
+- Final AC items captured
+- Scope in/out items
+- All child issues created (with numbers)
+- Suggested next steps (merge PRs for Research stubs first)
+<!-- PLATES-CORE:END interactive-epic-planning -->
 
 ## Label Rules
 
@@ -232,7 +377,7 @@ Use labels as stable process metadata. Do not create ad hoc labels unless they c
 |---|---|
 | `Bug`, `Feature`, `Epic`, `Research`, `Design`, `Question`, `Audit`, `Migration`, `Feedback Response` | Exactly one required issue type label. |
 | `Bug`, `Feature`, `Documentation`, `Feedback Response` | Exactly one required pull request type label. |
-| `Feedback Response` | Combined issue + PR type for PLATES-auto-generated feedback response tasks and any resulting PRs. Auto-created by `plates-address-pr-feedback.yml`. No `Epic:` label required. |
+| `Feedback Response` | Combined issue + PR type for feedback-response process work when needed. Not auto-created by `plates-address-pr-feedback.yml` in the inline response flow. No `Epic:` label required. |
 | `Epic: short-name` | Epic identity and feature grouping. Required on Epic and Feature issues. |
 | `area:*` | Stable subsystem or ownership area. |
 | `risk:*` | Review burden and release caution. |
@@ -286,10 +431,17 @@ When introducing new reusable process guidance, wrap it in a `PLATES-CORE` block
 
 The **Sync to Wiki on Merge** workflow is opt-in. Agents should not enable broad wiki writes without human approval. Prefer scoped page updates, provenance comments, auditable commits, and reversible changes. If wiki synchronization is requested but not configured, add `need:wiki-sync` and escalate.
 
+## Template Integrity Rules
+
+- Keep `.github/copilot-instructions.md` present and aligned with the repository's real CI/runtime commands.
+- Keep `.github/workflows/ci.yml` pointed at executable validation logic (`scripts/validate_plate_repo.sh`) rather than placeholder echo steps.
+- For repositories that add runtime manifests, replace placeholder CI/docs claims in the same PR that introduces the runtime.
+- Use repository-local temporary paths for scripts and validation helpers; avoid platform-specific assumptions such as `/tmp`.
+
 ## Escalation Rules
 
 Escalate to a human when product intent is ambiguous, acceptance criteria conflict, a required label is missing and cannot be inferred, a workflow would need to be weakened, a secret or permission is required, a public claim might change, or the agent cannot produce the required evidence.
 
 ## Prohibited Actions
 
-Agents must not merge their own pull requests **unless autonomous mode is active (`.github/AUTONOMOUS_MODE` present on the default branch) and the PR meets all eligibility criteria in §Autonomous Mode above**. Agents must not bypass required checks, remove documentation gates, weaken tests to pass CI, fabricate test results, silently rewrite product intent, expose secrets, enable write automation without approval, create or delete `.github/AUTONOMOUS_MODE` themselves, or treat chat history as more authoritative than repository artifacts. Agents must not close an issue without a corresponding PR that carries a `Closes #N` reference in its body. Agents must not open a PR that resolves a specific issue without including `Closes #N`, `Fixes #N`, or `Resolves #N` in the PR body.
+Agents must not merge their own pull requests **unless autonomous mode is active (`.github/AUTONOMOUS_MODE` present on the default branch) and the PR meets all eligibility criteria in §Autonomous Mode above**. Agents must not bypass required checks, remove documentation gates, weaken tests to pass CI, fabricate test results, silently rewrite product intent, expose secrets, enable write automation without approval, create or delete `.github/AUTONOMOUS_MODE` themselves, or treat chat history as more authoritative than repository artifacts. Agents must not close an issue without a corresponding PR that carries a `Closes #N` reference in its body, except for `Feedback Response` PRs. Agents must not open a PR that resolves a specific issue without including `Closes #N`, `Fixes #N`, or `Resolves #N` in the PR body, except for `Feedback Response` PRs.
