@@ -104,7 +104,6 @@ skills:
   - id: "interactive-epic-planning"
     description: "Conduct a guided Q&A session to extract epic requirements and progressively create the Epic issue and child stubs on GitHub."
     allowed_artifacts:
-      - "GitHub issues (via gh CLI)"
       - "docs/research/**"
       - "docs/design/**"
     required_evidence:
