@@ -68,7 +68,7 @@ planning_session:
   spikes: []                   # Items flagged for Spike (time-boxed exploration).
 
   # Session lifecycle
-  session_state: string        # planning_mode | building_epic | building_children | complete | paused | abandoned
+  session_state: string        # BUILDING_EPIC | BUILDING_CHILDREN | COMPLETE | PAUSED
   github_epic_number: int      # Null until Epic issue is created.
 
   # Created issue registry — populated during issue-creation phase
@@ -77,23 +77,17 @@ planning_session:
 
 #### `session_state` transitions
 
-`planning_mode` is the pre-creation conversational state where the agent is still gathering and confirming Epic details before `gh issue create` runs.
-
 ```
-planning_mode
+BUILDING_EPIC
     │  (epic_name and problem_statement confirmed)
     ▼
-building_epic
-    │  (epic created)
-    ▼
-building_children
+BUILDING_CHILDREN
     │  (all stubs created)
     ▼
-complete
+COMPLETE
 
-Any state ──► paused     (user ends session; serialise document)
-Any state ──► abandoned  (user explicitly cancels planning)
-paused    ──► building_epic | building_children  (session resumed)
+Any state ──► PAUSED  (user ends session; serialise document)
+PAUSED      ──► BUILDING_EPIC | BUILDING_CHILDREN  (session resumed)
 ```
 
 ---
