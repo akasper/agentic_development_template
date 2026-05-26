@@ -19,17 +19,23 @@ bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle
 ```
 
 Both scripts require only `gh` (GitHub CLI) and `git`. They cover the repeatable GitHub bootstrap work that otherwise gets missed in brand-new repositories.
+Both scripts also run runtime-aware local toolchain preflight and fail early when required tooling for detected manifests is missing (for example: `node`/`npm`, `wally`, `rojo`).
 
 ## Automatable Steps
 
 | Step | Why It Matters | Covered by Helper |
 |---|---|---|
 | Sync canonical PLATE labels from `.github/labels.yml` | The label taxonomy drives routing, enforcement, and review semantics. | Yes |
+
+After syncing labels, two labels deserve attention:
+- **`need:refinement`** — Created by the bootstrap script. Applied automatically to epic planning stubs; no manual action needed unless you are pre-creating stub issues before running the planner.
+- **`Spike`** — Created by the bootstrap script. Use for time-boxed investigations (see `AGENTS.md §Spike Issues`).
 | Remove conflicting default GitHub labels | Default labels such as `documentation` and `enhancement` create drift from the canonical PLATE taxonomy. | Yes |
 | Replace `@PLATE_REPO_OWNER` in `.github/CODEOWNERS` | Placeholder owners break review routing and code-owner protection. | Yes |
 | Enable delete-branch-on-merge | Keeps the repository clean after reviewed work lands. | Yes |
 | Initialize the wiki from `docs/wiki/Home.md` | Prevents the GitHub wiki from starting empty when the repository-managed source already exists. | Yes, when `--init-wiki` / `-InitWiki` is passed |
 | Apply conservative baseline branch protection | Provides immediate protection against force-pushes and branch deletion while requiring conversation resolution. | Yes, when `--protect-branch BRANCH` / `-ProtectBranch BRANCH` is passed |
+| Verify local toolchain prerequisites based on detected manifests | Prevents late-stage local validation failures caused by missing runtimes or CLIs. | Yes (default). Use `--skip-runtime-toolchain-check` / `-SkipRuntimeToolchainCheck` only when intentionally bypassing preflight |
 
 ## Human Decisions Still Required
 

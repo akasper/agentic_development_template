@@ -33,6 +33,9 @@
 - name: "Question"
   color: "d4c5f9"
   description: "Issue type: information goal that captures an unknown and closes with documented answer artifacts."
+- name: "Spike"
+  color: "c2e0c6"
+  description: "Issue type: time-boxed investigation with a defined question and hard timebox. Produces an answer or explicit discard decision."
 
 - name: "area:product"
   color: "bfd4f2"
@@ -99,6 +102,9 @@
 - name: "need:wiki-sync"
   color: "ededed"
   description: "Needs wiki synchronization or human review of wiki-sync output."
+- name: "need:refinement"
+  color: "ededed"
+  description: "Stub issue created during planning; acceptance criteria and scope details are incomplete and require refinement before implementation starts."
 
 - name: "auto-merge"
   color: "0e8a16"

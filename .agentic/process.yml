@@ -62,6 +62,7 @@ labels:
       - "Bug"
       - "Feature"
       - "Documentation"
+      - "Feedback Response"
   epic_rules:
     every_epic_issue_has_dedicated_label: true
     epic_label_pattern: "^Epic: .+"
@@ -111,6 +112,7 @@ pull_requests:
     - "Bug"
     - "Feature"
     - "Documentation"
+    - "Feedback Response"
   feature_pr_requires_current_md: true
   required_sections:
     - "Summary"
@@ -146,6 +148,7 @@ workflows:
   ci:
     name: "CI"
     path: ".github/workflows/ci.yml"
+    baseline_validation: "scripts/validate_plate_repo.sh"
   audit:
     name: "PLATE Audit"
     path: ".github/workflows/audit.yml"
@@ -168,6 +171,6 @@ audit:
   output_directory: "docs/audits"
 
 open_design_items:
-  - "Replace generic CI, audit, release, and pages placeholders with stack-specific commands in generated projects."
+  - "Replace generated-project placeholder CI commands with stack-specific build/lint/test commands when runtime manifests are added."
   - "Define project-specific wiki page map before enabling broad wiki synchronization."
   - "Create running example projects outside the book appendices and keep them versioned in repositories."
