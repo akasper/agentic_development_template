@@ -213,7 +213,7 @@ gh api -X PUT repos/OWNER/REPO/actions/permissions/workflow \
 
 ## Third-Party Agent Feedback
 
-When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR, the `.github/workflows/plates-address-pr-feedback.yml` workflow creates a GitHub issue titled `[PLATES] Address @<agent> feedback on PR #N` and assigns it to `copilot`. The Copilot Coding Agent picks up the issue and should:
+When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR that is **not** already labeled `Feedback Response`, the `.github/workflows/plates-address-pr-feedback.yml` workflow creates a GitHub issue titled `[PLATES] Address @<agent> feedback on PR #N` and assigns it to `copilot`. `Feedback Response` PRs are already in the dedicated response lane and are skipped by that workflow. The Copilot Coding Agent picks up the issue and should:
 
 1. Review all open inline comments and the overall review body from the named reviewer on the linked PR
 2. For any comment that includes a GitHub code suggestion (` ```suggestion ` block): apply it directly as a commit **unless** the suggestion introduces a bug or relies on a false assumption — if you skip a suggestion, reply to that thread with a brief explanation
@@ -231,7 +231,7 @@ When a third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR, the `
 
 | Stage | Expected artifact |
 |---|---|
-| Workflow fires | Issue created with `Feedback Response` label, assigned to `copilot` |
+| Workflow fires | Issue created for feedback on a non-`Feedback Response` PR, assigned to `copilot` |
 | Auto-labeling fires | PR/issue automatically receives `risk:low` and `auto-merge` labels via `auto-label-feedback-responses.yml` |
 | Copilot addresses feedback | Commits pushed to existing PR branch; review threads resolved |
 | If a new PR is needed | PR labeled `Feedback Response`, no closing keyword required; `risk:low` and `auto-merge` applied automatically |
