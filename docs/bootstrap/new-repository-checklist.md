@@ -45,8 +45,8 @@ After syncing labels, two labels deserve attention:
 | Configure GitHub Projects fields | Project field names and lifecycle shape should match the team’s planning model. |
 | Replace placeholder product language in docs | Only a human product owner can define the initial repository’s real intent and public claims. |
 | Create the first real `Epic: short-name` labels | Epics should reflect the project’s actual roadmap, not the template example. |
-| Tune CI, release, pages, and audit workflows | The template ships scaffolds, but real commands and release policy depend on the project stack. |
-| Decide whether to enable wiki sync | Write automation, token scope, and wiki publication policy require explicit approval. |
+| Tune CI, release, pages, and audit workflows | The template ships scaffolds, but real commands and release policy depend on the project stack. For content publishing: use **GitHub Pages** for the marketing site and user-facing documentation site; use the **Wiki** (synced from `docs/wiki/`) for design history, research, and "Current State" artifacts. See discussion #96 for rationale. |
+| Decide whether to enable wiki sync | Write automation, token scope, and wiki publication policy require explicit approval. Wiki is intended for design docs, history, and "Current State" artifacts (see distinction from GitHub Pages below). |
 
 ## Common Bootstrap Failure Modes
 
@@ -55,6 +55,7 @@ After syncing labels, two labels deserve attention:
 3. The GitHub wiki exists but stays empty even though `docs/wiki/Home.md` already defines the intended homepage.
 4. The repository claims GitHub Projects should hold mutable planning state, but no actual project fields have been created yet.
 5. Branch protection is missing or too weak for a GitHub-first workflow.
+6. Confusion between GitHub Pages (for marketing + docs site) and Wiki (for internal design/current-state artifacts), leading to content in the wrong place.
 
 ## Recommended First Follow-Up Issue
 
