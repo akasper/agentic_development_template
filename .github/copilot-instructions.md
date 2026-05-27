@@ -97,6 +97,7 @@ Quick reference:
 - Create the Epic issue as soon as you have a name and problem statement — do not wait for full AC.
 - Run at most 8 Q&A turns; stop at 3 minimum if the user signals completion.
 - After each turn, update the Epic body and post `📝 Updated #N` in chat.
+- When dependencies are identified during planning, link them using GitHub's native issue dependencies (sidebar) and note them in the body for orchestration agents.
 - Create child stubs (Research → Design → Feature) as the need becomes clear; tag them `need:refinement`.
 - Before creating, check for duplicate epics (Jaccard ≥ 0.5 on title tokens).
 - Store session state in `<!-- PLATE_SESSION_STATE: {...} -->` at the end of the Epic body.
