@@ -49,7 +49,7 @@ After syncing labels, two labels deserve attention:
 | Decide whether to enable wiki sync | Write automation, token scope, and wiki publication policy require explicit approval. |
 | Enable auto-merge for the repository | Allows low-risk PRs (with `auto-merge` label) to merge automatically once checks pass. Recommended for most teams using the autonomous mode features. |
 | Configure Dependabot | Enable security alerts and automated dependency updates for the languages/ecosystems used in the project. |
-| Decide on GitHub Pages setup | For hosting marketing site and/or documentation site (see separate guidance on Pages vs Wiki). |
+| Decide on GitHub Pages setup | For hosting marketing site and/or documentation site. |
 
 ## Common Bootstrap Failure Modes
 
