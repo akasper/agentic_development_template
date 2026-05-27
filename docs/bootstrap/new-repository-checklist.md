@@ -46,7 +46,8 @@ After syncing labels, two labels deserve attention:
 | Replace placeholder product language in docs | Only a human product owner can define the initial repository’s real intent and public claims. |
 | Create the first real `Epic: short-name` labels | Epics should reflect the project’s actual roadmap, not the template example. |
 | Tune CI, release, pages, and audit workflows | The template ships scaffolds, but real commands and release policy depend on the project stack. For content publishing: use **GitHub Pages** for the marketing site and user-facing documentation site; use the **Wiki** (synced from `docs/wiki/`) for design history, research, and "Current State" artifacts. See discussion #96 for rationale. |
-| Decide whether to enable wiki sync | Write automation, token scope, and wiki publication policy require explicit approval. Wiki is intended for design docs, history, and "Current State" artifacts (see distinction from GitHub Pages below). |
+| Decide whether to enable wiki sync | Write automation, token scope, and wiki publication policy require explicit approval. Wiki is intended for design docs, history, and "Current State" artifacts (see distinction from GitHub Pages above). |
+
 
 ## Common Bootstrap Failure Modes
 
