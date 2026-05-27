@@ -428,6 +428,8 @@ Use labels as stable process metadata. Do not create ad hoc labels unless they c
 | `risk:*` | Review burden and release caution. |
 | `need:*` | Missing input or required follow-up. |
 
+**Milestones.** Use GitHub Milestones to group related work, especially the children of a single Epic. This helps both humans and orchestration agents see the overall delivery picture for a body of work. Apply milestones at Epic creation time when possible and propagate to child issues.
+
 ## Documentation Rules
 
 Every Feature pull request must modify `CURRENT.md`. Documentation pull requests must commit a file to the appropriate `docs/` subdirectory and should explain whether they update process artifacts, product documentation, wiki source material, or public-facing claims. If a change affects feature behavior, update both implementation evidence and documentation evidence.
