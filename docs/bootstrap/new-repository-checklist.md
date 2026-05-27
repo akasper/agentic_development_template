@@ -47,6 +47,9 @@ After syncing labels, two labels deserve attention:
 | Create the first real `Epic: short-name` labels | Epics should reflect the project’s actual roadmap, not the template example. |
 | Tune CI, release, pages, and audit workflows | The template ships scaffolds, but real commands and release policy depend on the project stack. |
 | Decide whether to enable wiki sync | Write automation, token scope, and wiki publication policy require explicit approval. |
+| Enable auto-merge for the repository | Allows low-risk PRs (with `auto-merge` label) to merge automatically once checks pass. Recommended for most teams using the autonomous mode features. |
+| Configure Dependabot | Enable security alerts and automated dependency updates for the languages/ecosystems used in the project. |
+| Decide on GitHub Pages setup | For hosting marketing site and/or documentation site. |
 
 ## Common Bootstrap Failure Modes
 
