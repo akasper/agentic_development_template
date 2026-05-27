@@ -23,6 +23,8 @@ PLATE defaults to an **autopilot posture**: agents should proceed autonomously t
 
 **Easy revert as the norm.** Prefer squash merges (keeps history clean). Never push directly to `main`. Name branches `type/short-description`. Each squash commit on `main` should read as a complete, stand-alone unit of work.
 
+**Branch cleanup (default).** After a PR merges, delete the source branch unless there is an explicit, documented reason to keep it (e.g., long-lived feature branch with dependent work in flight). Agents should treat branch deletion as the normal post-merge step.
+
 **Resource consciousness.** Prefer targeted tool calls over exhaustive scans. Batch parallel reads. Stop investigating after sufficient evidence — do not read every file if you already know the answer. Avoid repeatedly regenerating content that has not changed.
 
 **Human checkpoints.** Post a summary comment on the Epic issue when all child issues are resolved. At that point, stop and let the human review before starting the next epic. Do not start a new epic autonomously without instruction.
@@ -370,6 +372,8 @@ Run at most 8 turns. Each turn = one agent question + one user answer.
 5. "What are you explicitly NOT trying to solve with this epic?"
 6. "Are there any epics, issues, or external changes this depends on?"
 
+When dependencies are identified, link them using GitHub's native issue dependencies (in the sidebar under "Dependencies"). This allows orchestration agents to understand prerequisite work and sequence tasks correctly. Document the dependency in the issue body as well for human readers.
+
 **Fast path:** If the user says "that's enough" or "I'll fill in the rest," stop at 3 turns minimum.
 
 ### Incremental Issue Updates
@@ -427,6 +431,8 @@ Use labels as stable process metadata. Do not create ad hoc labels unless they c
 | `area:*` | Stable subsystem or ownership area. |
 | `risk:*` | Review burden and release caution. |
 | `need:*` | Missing input or required follow-up. |
+
+**Milestones.** Use GitHub Milestones to group related work, especially the children of a single Epic. This helps both humans and orchestration agents see the overall delivery picture for a body of work. Apply milestones at Epic creation time when possible and propagate to child issues.
 
 ## Documentation Rules
 
