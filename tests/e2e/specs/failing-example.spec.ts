@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Example Failing Test (for demo)', () => {
-  test('intentionally fails to demonstrate video capture on failure', async ({ page }) => {
+  test.skip('intentionally fails to demonstrate video capture on failure', async ({ page }) => {
     // This test is intentionally written to fail so that you can see how Playwright
     // captures videos and traces when tests fail. In CI and local test runs, you'll
     // see videos retained in the test-results/ directory.
