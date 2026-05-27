@@ -370,6 +370,8 @@ Run at most 8 turns. Each turn = one agent question + one user answer.
 5. "What are you explicitly NOT trying to solve with this epic?"
 6. "Are there any epics, issues, or external changes this depends on?"
 
+When dependencies are identified, link them using GitHub's native issue dependencies (in the sidebar under "Dependencies"). This allows orchestration agents to understand prerequisite work and sequence tasks correctly. Document the dependency in the issue body as well for human readers.
+
 **Fast path:** If the user says "that's enough" or "I'll fill in the rest," stop at 3 turns minimum.
 
 ### Incremental Issue Updates

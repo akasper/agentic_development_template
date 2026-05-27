@@ -54,6 +54,7 @@ last_verified_commit: "pending-merge"
 | Template integrity + runtime drift guard | CI validates required agent-facing artifacts, and fails when runtime manifests are present but CI/docs still use template placeholder claims. | `.github/workflows/ci.yml`, `scripts/validate_plate_repo.sh`, `.github/copilot-instructions.md` | Manifest detection is convention-based; uncommon stacks may need additional manifest patterns. |
 | Wiki synchronization | Disabled by default and opt-in through repository configuration. | `.github/workflows/sync-wiki-on-merge.yml` | Requires `WIKI_TOKEN` and human approval before enabling writes. |
 | Autonomous mode | Disabled by default. Create `.github/AUTONOMOUS_MODE` to enable; delete it to disable. When active, agents may auto-merge eligible `risk:low` PRs labeled `auto-merge`. | `.github/workflows/auto-merge.yml`, `AGENTS.md §Autonomous Mode` | Requires `allow_auto_merge: true` and Actions write permissions (`default_workflow_permissions=write`) on the repository. |
+| Issue dependency linking for orchestration | Agents are expected to link dependencies and blockers using GitHub's native issue dependencies feature during planning and issue creation. Guidance added in `AGENTS.md` and copilot-instructions.md. | `AGENTS.md §Interactive Epic Planning`, `.github/copilot-instructions.md` | Depends on consistent use of GitHub's dependency graph feature. |
 
 ## Known Gaps
 
