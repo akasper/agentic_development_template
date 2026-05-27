@@ -23,6 +23,8 @@ PLATE defaults to an **autopilot posture**: agents should proceed autonomously t
 
 **Easy revert as the norm.** Prefer squash merges (keeps history clean). Never push directly to `main`. Name branches `type/short-description`. Each squash commit on `main` should read as a complete, stand-alone unit of work.
 
+**Branch cleanup (default).** After a PR merges, delete the source branch unless there is an explicit, documented reason to keep it (e.g., long-lived feature branch with dependent work in flight). Agents should treat branch deletion as the normal post-merge step.
+
 **Resource consciousness.** Prefer targeted tool calls over exhaustive scans. Batch parallel reads. Stop investigating after sufficient evidence — do not read every file if you already know the answer. Avoid repeatedly regenerating content that has not changed.
 
 **Human checkpoints.** Post a summary comment on the Epic issue when all child issues are resolved. At that point, stop and let the human review before starting the next epic. Do not start a new epic autonomously without instruction.
