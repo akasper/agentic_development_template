@@ -58,27 +58,6 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # Start development server in background
-      # CI env var allows apps to detect test environment
-      - name: Start development server
-        run: npm run dev > /tmp/dev-server.log 2>&1 &
-        env:
-          CI: true
-          NODE_ENV: test
-
-      # Wait for server to be ready (max 30 seconds)
-      # Uses curl to check HTTP connectivity before running tests
-      - name: Wait for development server
-        run: |
-          echo "Waiting for dev server at http://localhost:3000..."
-          timeout 30 bash -c '
-            until curl -s http://localhost:3000 > /dev/null 2>&1; do
-              echo "Server not ready, retrying..."
-              sleep 1
-            done
-            echo "Server is ready!"
-          ' || (echo "Server failed to start"; cat /tmp/dev-server.log; exit 1)
-
       # Run Playwright tests with CI-optimized settings
       # Base URL can be overridden via PLAYWRIGHT_TEST_BASE_URL env var if needed
       - name: Run Playwright tests
