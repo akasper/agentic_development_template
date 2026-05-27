@@ -111,6 +111,7 @@ jobs:
 
             if (prLabels.includes('Feedback Response')) {
               core.info(`PR #${prNumber} is labeled Feedback Response; skipping third-party feedback auto-addressing.`);
+              core.info(`Reminder: The Feedback Response work on this PR (or any follow-up) is responsible for ensuring the original triggering review threads/conversations are resolved before or upon merge (see feedback-resolution-check.yml and AGENTS.md).`);
               core.setOutput('should_act', 'false');
               return;
             }
