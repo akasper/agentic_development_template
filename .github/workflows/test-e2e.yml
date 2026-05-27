@@ -38,20 +38,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Setup Node.js with dependency caching for faster runs
+      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       # Install ffmpeg for video/GIF processing (Phase 2 enhancement)
       - name: Install ffmpeg
         run: sudo apt-get install -y ffmpeg
 
-      # Install npm dependencies with deterministic lockfile
+      # Install npm dependencies
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-fund --no-audit
         env:
           CI: true
 
