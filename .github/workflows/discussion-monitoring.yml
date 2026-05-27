@@ -1,0 +1,57 @@
+name: Autonomous Discussion Monitoring (Spike)
+
+# Initial scaffold for monitoring resolved discussions (especially Ideas)
+# that should lead to actionable issues in the repository.
+#
+# This is a starting point / spike for #150.
+# Currently disabled by default. Enable via repository variable or schedule.
+#
+# Future enhancements could:
+# - Use GraphQL to find resolved discussions in "Ideas" category with no linked issues
+# - Post a @copilot trigger comment suggesting creation of a Feature/Research issue
+# - Or automatically create a draft issue with the discussion content
+
+on:
+  schedule:
+    # Run daily at a low-traffic time (example)
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Only log what would be done (do not post comments)'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: read
+  issues: write
+  discussions: read
+
+jobs:
+  monitor-discussions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (for any local scripts if needed later)
+        uses: actions/checkout@v4
+
+      - name: Scan for resolved Ideas discussions without linked issues (placeholder)
+        uses: actions/github-script@v7
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+        with:
+          script: |
+            const dryRun = process.env.DRY_RUN === 'true';
+            core.info(`Discussion monitoring spike running (dry_run=${dryRun})`);
+
+            // TODO for #150:
+            // 1. Query recent resolved discussions in the "Ideas" category
+            // 2. Check if they have linked issues or have already been converted
+            // 3. For those that should become work items, either:
+            //    - Post a structured comment with a suggested issue title/body
+            //    - Or trigger a @copilot task to create the issue
+            //
+            // This is intentionally a minimal scaffold so the pattern can be reviewed
+            // before building real logic.
+
+            core.info('Spike complete — no actions taken in this initial version.');
+            core.info('See issue #150 for the full requirement and next steps.');
