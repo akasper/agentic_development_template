@@ -8,13 +8,13 @@ From the generated repository root, choose the script for your operating system:
 
 **macOS / Linux / WSL (bash):**
 ```bash
-bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main
+bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main --fork-pr-workflow-approval-policy first_time_contributors
 # Add --init-wiki only if you plan to enable wiki sync.
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\scripts\BootstrapGitHub.ps1 -Repo OWNER/REPO -LocalRepo . -OwnerHandle @your-handle -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main
+.\scripts\BootstrapGitHub.ps1 -Repo OWNER/REPO -LocalRepo . -OwnerHandle @your-handle -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main -ForkPrWorkflowApprovalPolicy first_time_contributors
 # Add -InitWiki only if you plan to enable wiki sync.
 ```
 
@@ -35,6 +35,7 @@ After syncing labels, two labels deserve attention:
 | Enable delete-branch-on-merge | Keeps the repository clean after reviewed work lands. | Yes |
 | Initialize the wiki from `docs/wiki/Home.md` | Prevents the GitHub wiki from starting empty when the repository-managed source already exists. | Yes, when `--init-wiki` / `-InitWiki` is passed |
 | Apply conservative baseline branch protection | Provides immediate protection against force-pushes and branch deletion while requiring conversation resolution. | Yes, when `--protect-branch BRANCH` / `-ProtectBranch BRANCH` is passed |
+| Set fork-PR workflow approval policy | Reduces manual "approve workflow run" friction for recurring external-agent PRs. | Yes, when `--fork-pr-workflow-approval-policy POLICY` / `-ForkPrWorkflowApprovalPolicy POLICY` is passed |
 | Verify local toolchain prerequisites based on detected manifests | Prevents late-stage local validation failures caused by missing runtimes or CLIs. | Yes (default). Use `--skip-runtime-toolchain-check` / `-SkipRuntimeToolchainCheck` only when intentionally bypassing preflight |
 
 ## Human Decisions Still Required

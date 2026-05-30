@@ -18,6 +18,7 @@ SET_DELETE_BRANCH_ON_MERGE=false
 PROTECT_BRANCH=""
 INIT_WIKI=false
 SKIP_RUNTIME_TOOLCHAIN_CHECK=false
+FORK_PR_WORKFLOW_APPROVAL_POLICY=""
 
 DEFAULT_LABELS_TO_REMOVE=(
     "bug"
@@ -43,6 +44,12 @@ Options:
   --set-delete-branch-on-merge  Enable delete-branch-on-merge
   --protect-branch BRANCH       Apply conservative baseline protection to BRANCH
   --init-wiki                   Initialize the wiki from docs/wiki/Home.md
+  --fork-pr-workflow-approval-policy POLICY
+                                Set Actions fork-PR workflow approval policy.
+                                Valid values:
+                                - first_time_contributors_new_to_github
+                                - first_time_contributors
+                                - all_external_contributors
   --skip-runtime-toolchain-check
                                 Skip runtime-aware local toolchain preflight
   -h, --help                    Show this help message
@@ -59,6 +66,7 @@ while [[ $# -gt 0 ]]; do
         --set-delete-branch-on-merge) SET_DELETE_BRANCH_ON_MERGE=true; shift ;;
         --protect-branch) PROTECT_BRANCH="$2"; shift 2 ;;
         --init-wiki) INIT_WIKI=true; shift ;;
+        --fork-pr-workflow-approval-policy) FORK_PR_WORKFLOW_APPROVAL_POLICY="$2"; shift 2 ;;
         --skip-runtime-toolchain-check) SKIP_RUNTIME_TOOLCHAIN_CHECK=true; shift ;;
         -h|--help) usage ;;
         *) echo "Unknown argument: $1" >&2; usage ;;
@@ -68,6 +76,16 @@ done
 if [[ -z "$REPO" ]]; then
     echo "Error: --repo is required." >&2
     usage
+fi
+
+if [[ -n "$FORK_PR_WORKFLOW_APPROVAL_POLICY" ]]; then
+    case "$FORK_PR_WORKFLOW_APPROVAL_POLICY" in
+        first_time_contributors_new_to_github|first_time_contributors|all_external_contributors) ;;
+        *)
+            echo "Error: invalid --fork-pr-workflow-approval-policy value: $FORK_PR_WORKFLOW_APPROVAL_POLICY" >&2
+            exit 1
+            ;;
+    esac
 fi
 
 LOCAL_REPO="$(cd "$LOCAL_REPO" && pwd)"
@@ -189,6 +207,17 @@ fi
 if $SET_DELETE_BRANCH_ON_MERGE; then
     gh repo edit "$REPO" --delete-branch-on-merge
     echo "Enabled delete-branch-on-merge."
+fi
+
+# Configure fork PR workflow approval policy ---------------------------------------
+
+if [[ -n "$FORK_PR_WORKFLOW_APPROVAL_POLICY" ]]; then
+    gh api \
+        --method PUT \
+        -H "Accept: application/vnd.github+json" \
+        "repos/$REPO/actions/permissions/fork-pr-contributor-approval" \
+        -f "approval_policy=$FORK_PR_WORKFLOW_APPROVAL_POLICY"
+    echo "Set fork-PR workflow approval policy to $FORK_PR_WORKFLOW_APPROVAL_POLICY."
 fi
 
 # Apply baseline branch protection -----------------------------------------------

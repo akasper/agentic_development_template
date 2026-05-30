@@ -1,5 +1,6 @@
 # PLATE canonical label registry.
-# Mutable planning state such as status, priority, owner, rank, target date, iteration, and release target belongs in GitHub Projects fields.
+# Mutable planning state such as priority, owner, rank, target date, iteration, and release target belongs in GitHub Projects fields.
+# Reserved exception: `status:blocked` and `status:ready-to-work` are automation-routing labels used by PLATES workflows.
 
 - name: "Feedback Response"
   color: "e4e669"

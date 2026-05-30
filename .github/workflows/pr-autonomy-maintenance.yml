@@ -1,0 +1,203 @@
+name: PR Autonomy Maintenance
+
+# Keeps open PRs progressing autonomously by:
+# 1) refreshing branches when they are only behind base (no conflicts)
+# 2) triggering Copilot conflict-resolution when merge conflicts appear
+# 3) auto-applying auto-merge on eligible low-risk PRs while AUTONOMOUS_MODE is active
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled]
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  maintain-prs:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pr-autonomy-maintenance
+      cancel-in-progress: false
+    steps:
+      - name: Refresh branches, trigger conflict handling, and auto-label eligible PRs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const CONFLICT_MARKER = '<!-- plates-conflict-trigger-v1 -->';
+            const CONFLICT_COOLDOWN_MS = 30 * 60 * 1000;
+            const reservedNeedLabels = new Set(['need:human-review', 'need:security-review', 'need:decision']);
+
+            const listOpenPrs = async () => {
+              if (context.payload.pull_request) {
+                return [context.payload.pull_request];
+              }
+              return github.paginate(github.rest.pulls.list, {
+                owner,
+                repo,
+                state: 'open',
+                per_page: 100,
+              });
+            };
+
+            const isAutonomousModeActive = async () => {
+              try {
+                await github.rest.repos.getContent({
+                  owner,
+                  repo,
+                  path: '.github/AUTONOMOUS_MODE',
+                  ref: context.payload.repository?.default_branch || 'main',
+                });
+                return true;
+              } catch (error) {
+                return false;
+              }
+            };
+
+            const hasSensitiveFileChanges = (files) => {
+              const sensitivePatterns = [
+                /^AGENTS\.md$/i,
+                /^SPEC\.md$/i,
+                /^\.github\/CODEOWNERS$/i,
+                /^\.github\/AUTONOMOUS_MODE$/i,
+                /^\.github\/workflows\//i,
+                /^README\.md$/i,
+                /^docs\/marketing\//i,
+                /^site\//i,
+              ];
+              return files.some((name) => sensitivePatterns.some((re) => re.test(name)));
+            };
+
+            const prs = await listOpenPrs();
+            if (prs.length === 0) {
+              core.info('No open PRs to maintain.');
+              return;
+            }
+
+            const autonomousModeActive = await isAutonomousModeActive();
+            core.info(`Autonomous mode active: ${autonomousModeActive}`);
+
+            for (const lightweightPr of prs) {
+              const prNumber = lightweightPr.number;
+
+              const { data: pr } = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: prNumber,
+              });
+
+              if (pr.draft) {
+                core.info(`PR #${prNumber} is draft; skipping.`);
+                continue;
+              }
+
+              const labelNames = (pr.labels || []).map((l) => l.name);
+              const lowerLabelNames = labelNames.map((n) => n.toLowerCase());
+              const hasBlockingNeedLabel = lowerLabelNames.some((name) => reservedNeedLabels.has(name));
+              if (hasBlockingNeedLabel) {
+                core.info(`PR #${prNumber} has blocking need:* label; skipping autonomous actions.`);
+                continue;
+              }
+
+              const mergeableState = (pr.mergeable_state || '').toLowerCase();
+              const mergeable = pr.mergeable;
+
+              if (mergeable === true && mergeableState === 'behind') {
+                try {
+                  await github.rest.pulls.updateBranch({
+                    owner,
+                    repo,
+                    pull_number: prNumber,
+                  });
+                  core.info(`Updated branch for PR #${prNumber} (was behind).`);
+                } catch (error) {
+                  core.warning(`Could not update branch for PR #${prNumber}: ${error.message}`);
+                }
+              }
+
+              const hasConflicts = mergeable === false || mergeableState === 'dirty';
+              if (hasConflicts) {
+                const comments = await github.paginate(github.rest.issues.listComments, {
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  per_page: 100,
+                });
+
+                const latestConflictComment = comments
+                  .filter((c) => c.body && c.body.includes(CONFLICT_MARKER))
+                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+
+                const isInCooldown =
+                  latestConflictComment &&
+                  (Date.now() - new Date(latestConflictComment.created_at).getTime()) < CONFLICT_COOLDOWN_MS;
+
+                if (!isInCooldown) {
+                  const body = [
+                    CONFLICT_MARKER,
+                    `@copilot Merge conflicts detected on this PR branch (\`${pr.head.ref}\`).`,
+                    '',
+                    'Please resolve the conflicts on the existing branch and push an updated commit set.',
+                    '',
+                    'Requirements:',
+                    '1. Reconcile conflicts without dropping either side blindly.',
+                    '2. Preserve existing issue linkage and PR labels.',
+                    '3. Keep `CURRENT.md` / `.current/*.md` evidence coherent with final merged behavior.',
+                    '4. If conflict resolution requires product/security judgment, add `need:human-review` and explain the decision point.',
+                  ].join('\n');
+
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: prNumber,
+                    body,
+                  });
+
+                  core.info(`Posted conflict-resolution trigger for PR #${prNumber}.`);
+                } else {
+                  core.info(`Conflict trigger cooldown active for PR #${prNumber}; skipping comment.`);
+                }
+              }
+
+              if (!autonomousModeActive) {
+                continue;
+              }
+
+              const hasRiskLow = labelNames.includes('risk:low');
+              const hasAutoMerge = labelNames.includes('auto-merge');
+              if (!hasRiskLow || hasAutoMerge) {
+                continue;
+              }
+
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: prNumber,
+                per_page: 100,
+              });
+              const fileNames = files.map((f) => f.filename);
+
+              if (hasSensitiveFileChanges(fileNames)) {
+                core.info(`PR #${prNumber} changes sensitive files; skipping auto-merge labeling.`);
+                continue;
+              }
+
+              if (hasConflicts) {
+                core.info(`PR #${prNumber} has conflicts; skipping auto-merge labeling.`);
+                continue;
+              }
+
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: prNumber,
+                labels: ['auto-merge'],
+              });
+              core.info(`Added auto-merge label to eligible PR #${prNumber}.`);
+            }

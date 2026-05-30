@@ -34,9 +34,14 @@ jobs:
             });
             const changed = files.map((file) => file.filename);
             core.info(`Changed files:\n${changed.join('\n')}`);
-            if (!changed.includes('CURRENT.md')) {
-              core.setFailed('Feature pull requests must modify CURRENT.md so durable project state stays current. If this PR is not a Feature, remove the Feature label.');
+            const hasCurrentRollupUpdate = changed.includes('CURRENT.md');
+            const hasPerTicketCurrentEntry = changed.some((name) => /^\.current\/.+\.md$/i.test(name));
+
+            if (!hasCurrentRollupUpdate && !hasPerTicketCurrentEntry) {
+              core.setFailed(
+                'Feature pull requests must modify CURRENT.md or add/update at least one .current/*.md entry. If this PR is not a Feature, remove the Feature label.'
+              );
             }
       - name: Skip non-Feature PR
         if: steps.labels.outputs.is_feature != 'true'
-        run: echo "Not a Feature PR; CURRENT.md update is not required by this check."
+        run: echo "Not a Feature PR; CURRENT-state artifact update is not required by this check."

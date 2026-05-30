@@ -30,7 +30,8 @@ Playwright guidance defaults:
 This repository is a **PLATE template**, not an application codebase. The important architecture is the process wiring between durable project artifacts, machine-readable rules, and GitHub enforcement:
 
 - `SPEC.md` defines the intended goal state.
-- `CURRENT.md` records the implemented state and verification evidence.
+- `CURRENT.md` records the top-level implemented-state rollup and verification evidence.
+- `.current/` stores per-ticket implemented-state entries to reduce Feature-PR merge contention.
 - `AGENTS.md` defines local agent operating rules and escalation boundaries.
 - `.agentic\process.yml` mirrors the same process in machine-readable form for automation and audits.
 - `.github\labels.yml`, `.github\ISSUE_TEMPLATE\`, and `.github\PULL_REQUEST_TEMPLATE.md` define the work intake and review metadata.
@@ -39,6 +40,7 @@ This repository is a **PLATE template**, not an application codebase. The import
 - `.github\workflows\pr-issue-link-check.yml` warns (and fails for `Feature`/`Bug` PRs) if the PR body contains no closing keyword (`Closes #N`).
 - `.github\workflows\question-handling.yml` supports the `/question-batch` issue-comment slash command for triaging open Question issues.
 - `.github\workflows\auto-merge.yml` enables autonomous PR merging when `.github/AUTONOMOUS_MODE` is present and the PR carries the `auto-merge` label.
+- `.github\workflows\pr-autonomy-maintenance.yml` continuously refreshes behind PR branches, triggers conflict-resolution routing, and auto-labels eligible `risk:low` PRs with `auto-merge` when autonomous mode is active.
 - `.github\workflows\plates-address-pr-feedback.yml` monitors `pull_request_review` and `pull_request_review_comment` events. When a known third-party agent (Devin, OpenHands, etc.) leaves feedback on a PR that is not already labeled `Feedback Response`, it posts a deduplicated `@copilot` trigger comment directly on that PR (no new issue, no associated response PR). Configure the agent list via the `PLATE_PR_FEEDBACK_AGENTS` repository variable (comma-separated logins); the workflow falls back to built-in pattern matching when the variable is absent. Set `COPILOT_TRIGGER_PAT` for reliable Actions-side `@copilot` routing.
 - `.github\workflows\feedback-resolution-check.yml` fails when a PR has unresolved active review threads or `reviewDecision=CHANGES_REQUESTED`. Make this check required in branch protection so auto-merge waits until commentary is actually addressed.
 - `.github\workflows\sync-wiki-on-merge.yml` runs only for merged `Feature` PRs on `main`, then copies scoped documentation sources into the GitHub wiki.
@@ -52,13 +54,13 @@ Read those pieces together when making process changes. A change in one of them 
 
 - Treat repository artifacts as the source of durable truth. If behavior, process, or evidence changes, update the relevant artifact instead of relying on chat history.
 - If `AGENTS.md`, `.agentic\process.yml`, and the template files disagree, preserve the PLATE intent and keep them aligned.
-- Labels are stable process metadata, not casual tags. Use type labels (`Bug`, `Feature`, `Epic`, `Documentation`, `Research`, `Design`, `Question`, `Audit`, `Migration`) and prefixed labels (`Epic:`, `area:`, `risk:`, `need:`) according to the existing taxonomy. Do not introduce `priority:` or `status:` labels; those belong in GitHub Projects fields.
+- Labels are stable process metadata, not casual tags. Use type labels (`Bug`, `Feature`, `Epic`, `Documentation`, `Research`, `Design`, `Question`, `Audit`, `Migration`) and prefixed labels (`Epic:`, `area:`, `risk:`, `need:`) according to the existing taxonomy. Do not introduce `priority:` labels. `status:` labels are reserved for PLATES automation (`status:blocked`, `status:ready-to-work`) and should not be expanded ad hoc.
 - `Feature` issues must carry both the `Feature` label and a matching `Epic: short-name` label. Their issue template expects acceptance criteria, test expectations, and documentation impact.
 - `Bug` work should include a reproduction path or explicitly signal the gap with `need:reproduction`, plus a regression test plan.
 - `Research` issues must close with a committed artifact in `docs/research/` or a `SPEC.md` update — not just an issue comment. See `docs/research/README.md`.
 - `Design` issues must close with a committed artifact in `docs/design/` or `docs/wiki/Features/`. See `docs/design/README.md`.
 - `Question` issues are information goals. Batch triage with `/question-batch` or `scripts/question_batch.sh`, and when an answer changes agent guidance, update both `AGENTS.md` and `.agentic/skills.yml` in the closing PR.
-- Every PR must carry a type label (`Bug`, `Feature`, or `Documentation`). **Critical:** The checkboxes in the PR template body do **not** apply GitHub labels — labels must be set explicitly via the CLI or GitHub API. Preferred approach: include `--label "<type>"` in `gh pr create` so the label is applied atomically at PR creation. If the PR is already open (e.g., created via the GitHub web UI or REST API), run `gh pr edit <number> --add-label "Feature"` as the very next step before doing anything else. `Feature` PRs must update `CURRENT.md`; documentation-only changes should use the `Documentation` label.
+- Every PR must carry a type label (`Bug`, `Feature`, `Documentation`, or `Feedback Response`). **Critical:** The checkboxes in the PR template body do **not** apply GitHub labels — labels must be set explicitly via the CLI or GitHub API. Preferred approach: include `--label "<type>"` in `gh pr create` so the label is applied atomically at PR creation. If the PR is already open (e.g., created via the GitHub web UI or REST API), run `gh pr edit <number> --add-label "Feature"` as the very next step before doing anything else. `Feature` PRs must update `CURRENT.md` or at least one `.current/*.md` entry; documentation-only changes should use the `Documentation` label.
 - When a PR is opened without a type label, the `label-check.yml` CI workflow fails immediately **and posts a repair comment on the PR** with the exact `gh pr edit` command to fix it. Look for the ⚠️ bot comment on the PR — it contains the precise repair command for that PR number.
 - **Every PR that resolves a specific issue must include `Closes #N` (or `Fixes #N` / `Resolves #N`) in the PR body, except for `Feedback Response` PRs.** GitHub will then automatically close the linked issue on merge. The `pr-issue-link-check.yml` workflow warns (and fails for `Feature`/`Bug` PRs) if the closing keyword is absent.
 - PRs that do not resolve a tracked issue (chores, dependency bumps) should be labeled `no-issue` to silence the closing-keyword check.
@@ -87,6 +89,103 @@ When implementing a Feature that includes UI changes, use the local recording an
 4. Commit the GIF and include it in the PR description: `![Feature Demo](../../fixtures/gifs/feature-name-demo.gif)`
 
 **Dependencies:** Node.js 18+, npm, Playwright (in project), ffmpeg (optional for GIF generation). See `scripts/README.md` for installation and troubleshooting.
+
+## Playwright E2E Testing
+
+Use Playwright to provide reproducible test coverage and visual evidence for user-visible features. See full guidance in `AGENTS.md §E2E Testing Expectations`, `docs/playwright-e2e-guide.md`, and `tests/e2e/README.md`.
+
+### When to Write E2E Tests
+
+- **Do write:** UI features, user workflows, form submissions, navigation, API integrations visible in the UI, critical paths (login, signup, checkout)
+- **Do not write:** Internal business logic, non-browser services, utility functions—those belong in unit tests
+
+### Writing Playwright Specs
+
+1. **Use Page Object Model pattern** (`tests/e2e/pages/` directory) to keep tests maintainable and readable
+2. **Test happy path + error conditions:**
+   - Happy path: user successfully completes the workflow
+   - Error conditions: form validation, API failures, network issues
+3. **Keep tests deterministic and focused:**
+   - One feature per spec file (e.g., `tests/e2e/specs/user-login.spec.ts`)
+   - Use `waitForSelector`, `waitForLoadState`, not hard waits
+   - Aim for 2–3 specs per Feature PR
+   - Test duration: 5–15 seconds (avoid slow, flaky tests)
+4. **Example Page Object:**
+   ```typescript
+   // tests/e2e/pages/login-page.ts
+   export class LoginPage extends BasePage {
+     async fillEmail(email: string) { /* ... */ }
+     async fillPassword(password: string) { /* ... */ }
+     async clickLogin() { /* ... */ }
+     async verifyLoginSuccess() { /* ... */ }
+   }
+   ```
+5. **Example Spec:**
+   ```typescript
+   // tests/e2e/specs/user-login.spec.ts
+   test('user can log in with valid credentials', async ({ page }) => {
+     const loginPage = new LoginPage(page);
+     await loginPage.navigate();
+     await loginPage.fillEmail('user@example.com');
+     await loginPage.fillPassword('correct-password');
+     await loginPage.clickLogin();
+     await loginPage.verifyLoginSuccess();
+   });
+   ```
+
+### Running Tests
+
+| Command | Purpose |
+|---|---|
+| `npm run test:e2e` | Run all E2E tests (non-headed) |
+| `npm run test:e2e:watch` | Watch mode for development |
+| `npm run test:e2e:debug` | Headed browser + Playwright Inspector |
+| `npm run test:e2e -- --ui` | UI mode for test debugging |
+
+**Always run `npm run test:e2e` locally before opening a PR.**
+
+### Recording Demos
+
+For user-visible features, record a 2–5 second demo GIF:
+
+1. **Ensure the test is deterministic and passes locally** (`npm run test:e2e`)
+2. **Record with headed browser:** `npm run record:e2e feature-name --headed`
+3. **When prompted, generate a GIF** (choose quality: low, medium, or high)
+4. **GIF is saved to:** `tests/e2e/fixtures/gifs/feature-name.gif`
+5. **Verify GIF size:**
+   - Aim for <1MB (warn >3MB, fail >5MB)
+   - Use `low` quality for large interactions; `medium` for typical demos
+6. **Embed in PR description or CURRENT.md:**
+   ```markdown
+   ![Feature demo](tests/e2e/fixtures/gifs/feature-name.gif)
+   ```
+7. **Commit and push** with your Feature PR
+
+See `AGENTS.md §Demo GIF Recording for UI Features` for full details.
+
+### CI Integration
+
+- `.github/workflows/test-e2e.yml` runs `npm run test:e2e` on every PR
+- Videos are retained only on failure (configured in `playwright.config.ts`)
+- GIF generation is triggered when PR has `demo` label
+- Artifacts uploaded with 90-day retention
+- GIF artifacts include embedding instructions in PR comment
+
+### MCP Tools (Phase 2)
+
+When available via `.agentic/extensions.yml`:
+- `@copilot init-playwright` — Scaffold E2E setup in a new repo
+- `@copilot validate-e2e-tests` — Check setup completeness
+- `@copilot record-e2e-gif` — Generate demo GIF from test
+
+### Troubleshooting
+
+- **Test timeouts:** Use `page.waitForLoadState('networkidle')` for SPAs; increase timeout for slow endpoints
+- **Flaky tests:** Add explicit waits instead of hard-coded delays; check for race conditions
+- **GIF size too large:** Reduce test duration (2–5 sec), use `low` quality, or trim video with ffmpeg
+- **Permission errors on Windows:** Run PowerShell as Administrator if recording fails
+
+See `docs/playwright-e2e-guide.md` and `scripts/README.md` for detailed troubleshooting.
 
 ## Interactive epic planning
 

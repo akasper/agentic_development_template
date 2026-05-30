@@ -23,7 +23,7 @@ skills:
     required_evidence:
       - "linked issue"
       - "tests run"
-      - "CURRENT.md update for Feature PRs"
+      - "CURRENT.md or .current/<ticket>.md update for Feature PRs"
       - "closing issue comment includes structured === USAGE REPORT === block"
     prohibited_actions:
       - "merge own pull request"
@@ -116,6 +116,24 @@ skills:
       - "merge own pull request"
       - "skip duplicate detection before creating"
       - "create more than 3 child stubs per type without user confirmation"
+  - id: "playwright-e2e"
+    description: "Write, debug, and record Playwright E2E tests for UI features; generate demo GIFs."
+    allowed_artifacts:
+      - "tests/e2e/specs/**"
+      - "tests/e2e/pages/**"
+      - "tests/e2e/fixtures/gifs/**"
+      - "CURRENT.md"
+      - "docs/playwright-e2e-guide.md"
+      - "tests/e2e/README.md"
+    required_evidence:
+      - "new E2E test spec for UI features"
+      - "tests pass locally: `npm run test:e2e`"
+      - "demo GIF recorded (2–5 sec) and committed for user-visible features"
+      - "GIF size within limits (warn <3MB, fail >5MB)"
+      - "GIF embedding in PR description or CURRENT.md"
+    prohibited_actions:
+      - "merge PR without E2E tests passing"
+      - "test internal logic or non-browser services with Playwright (use unit tests instead)"
   # PLATES-CORE:BEGIN template-sync-skill
   - id: "template-sync"
     description: "Import upstream PLATE template behavior changes while preserving downstream customizations."

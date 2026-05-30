@@ -15,10 +15,11 @@ severity:
 
 checks:
   - id: "feature-current-state"
-    description: "Every merged Feature PR should have a corresponding CURRENT.md update."
+    description: "Every merged Feature PR should have a corresponding CURRENT.md or .current/*.md update."
     targets:
       - "pull requests"
       - "CURRENT.md"
+      - ".current"
   - id: "label-taxonomy"
     description: "Labels should match .github/labels.yml and avoid status/priority defaults."
     targets:

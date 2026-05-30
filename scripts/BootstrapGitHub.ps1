@@ -31,6 +31,10 @@
 .PARAMETER InitWiki
     Initialize the wiki with docs/wiki/Home.md.
 
+.PARAMETER ForkPrWorkflowApprovalPolicy
+    Set Actions fork-PR workflow approval policy.
+    Valid values: first_time_contributors_new_to_github, first_time_contributors, all_external_contributors.
+
 .PARAMETER SkipRuntimeToolchainCheck
     Skip runtime-aware local toolchain preflight.
 
@@ -55,6 +59,9 @@ param(
     [string]$ProtectBranch = "",
 
     [switch]$InitWiki,
+
+    [ValidateSet("first_time_contributors_new_to_github", "first_time_contributors", "all_external_contributors")]
+    [string]$ForkPrWorkflowApprovalPolicy,
 
     [switch]$SkipRuntimeToolchainCheck
 )
@@ -178,6 +185,18 @@ if ($OwnerHandle -ne "") {
 if ($SetDeleteBranchOnMerge) {
     & gh repo edit $Repo --delete-branch-on-merge
     Write-Host "Enabled delete-branch-on-merge."
+}
+
+# Configure fork PR workflow approval policy ---------------------------------------
+
+if ($ForkPrWorkflowApprovalPolicy) {
+    & gh api `
+        --method PUT `
+        -H "Accept: application/vnd.github+json" `
+        "repos/$Repo/actions/permissions/fork-pr-contributor-approval" `
+        -f "approval_policy=$ForkPrWorkflowApprovalPolicy"
+    if ($LASTEXITCODE -ne 0) { exit 1 }
+    Write-Host "Set fork-PR workflow approval policy to $ForkPrWorkflowApprovalPolicy."
 }
 
 # Apply baseline branch protection -----------------------------------------------

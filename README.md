@@ -27,7 +27,8 @@ See `AGENTS.md` for the full operating doctrine and authority model.
 PLATE separates future intent from present reality:
 
 - **`SPEC.md`** describes desired future state (vision, users, goals, constraints).
-- **`CURRENT.md`** describes what is actually implemented and verified today.
+- **`CURRENT.md`** is the top-level implemented-state rollup.
+- **`.current/*.md`** holds per-ticket implemented-state entries to reduce cross-PR contention.
 
 If a claim is not supported by `CURRENT.md`, it should be treated as planned work.
 
@@ -43,12 +44,12 @@ From the new repository root:
 
 **macOS / Linux / WSL**
 ```bash
-bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main
+bash scripts/bootstrap_github.sh --repo OWNER/REPO --local-repo . --owner-handle @your-handle --remove-default-labels --set-delete-branch-on-merge --protect-branch main --fork-pr-workflow-approval-policy first_time_contributors
 ```
 
 **Windows (PowerShell)**
 ```powershell
-.\scripts\BootstrapGitHub.ps1 -Repo OWNER/REPO -LocalRepo . -OwnerHandle @your-handle -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main
+.\scripts\BootstrapGitHub.ps1 -Repo OWNER/REPO -LocalRepo . -OwnerHandle @your-handle -RemoveDefaultLabels -SetDeleteBranchOnMerge -ProtectBranch main -ForkPrWorkflowApprovalPolicy first_time_contributors
 ```
 
 Both bootstrap scripts run a runtime-aware local toolchain preflight (`scripts/check_toolchain.sh` or `scripts/CheckToolchain.ps1`) before GitHub mutations.
@@ -82,13 +83,27 @@ Open a small PR with:
 - closing keyword (`Closes #N`),
 - updated evidence (`CURRENT.md` and/or docs/tests as required by issue type).
 
+## Testing with Playwright E2E
+
+This repository includes end-to-end testing with Playwright and automatic demo GIF generation for documentation.
+
+- **Run tests:** `npm run test:e2e`
+- **Record demo:** `./scripts/e2e-record.sh feature-name --headed`
+- **Docs:** [Playwright E2E Guide](docs/playwright-e2e-guide.md)
+- **Wiki:** [Feature Showcase](docs/wiki/feature-showcase.md), [E2E Testing](docs/wiki/playwright-e2e.md)
+- **Adoption:** [Forward-Port Guide](docs/forward-port-plans/playwright-e2e-adoption.md)
+
+See [`docs/README.md`](docs/README.md) for complete documentation index.
+
 ## Repository map
 
 - `AGENTS.md` - operating rules and authority boundaries
 - `SPEC.md` - future-state product intent
 - `CURRENT.md` - implemented-state record
+- `.current/` - per-ticket current-state entries
 - `CONTRIBUTING.md` - contributor expectations and traceability rules
 - `.agentic/` - machine-readable process and skill metadata
+- `docs/` - documentation index and guides
 - `docs/bootstrap/` - new repo setup guidance
 - `docs/design/`, `docs/research/`, `docs/wiki/` - durable artifacts
 - `.github/workflows/` - enforcement and automation checks

@@ -29,6 +29,8 @@ PLATE defaults to an **autopilot posture**: agents should proceed autonomously t
 
 **Pacing.** Do not create more than five open PRs simultaneously unless they are all marked `auto-merge` and eligible. Sequence work to minimize merge conflicts; prefer additive-first ordering.
 
+**Current-state conflict avoidance.** For Feature work, default to per-ticket `.current/*.md` updates instead of editing shared sections in `CURRENT.md` on every branch. Roll up into `CURRENT.md` during release prep or periodic audits.
+
 **Autonomous mode** (see §Autonomous Mode below) is the formal toggle for the self-merge aspect of this doctrine. The pacing and PR-discipline rules apply in both modes.
 
 ## Required Work Loop
@@ -43,7 +45,7 @@ Follow the loop that matches the issue type.
 | 2 | Identify acceptance criteria, expected tests, documentation impact, and risk. |
 | 3 | Add or update tests before or alongside implementation. |
 | 4 | Implement the smallest coherent change that satisfies the issue. |
-| 5 | Update `CURRENT.md` to describe the implemented behavior and verification evidence. |
+| 5 | Update `CURRENT.md` **or** a per-ticket `.current/*.md` entry to describe implemented behavior and verification evidence. |
 | 6 | If the feature includes UI changes, record a demo GIF (see Demo GIF Recording guidance below). |
 | 7 | Open a PR labeled `Feature` with `Closes #N` in the body. Complete the PR template. When using GitHub CLI, apply the type label in the `gh pr create` command itself rather than relying on a later edit step. |
 | 8 | Leave wiki-sync, release-note, and audit evidence for the human reviewer and post-merge workflows. |
@@ -87,6 +89,40 @@ When implementing a Feature that includes UI changes or user interactions:
 # Commit and include in PR
 git add tests/e2e/fixtures/gifs/create-account-demo.gif
 ```
+
+**E2E Testing Expectations**
+
+Playwright E2E tests provide reproducible test coverage and visual evidence for user-visible features:
+
+- **Scope:** E2E tests cover browser-based user workflows, API integrations visible in the UI, and critical user paths (login, checkout, account setup, etc.). Do not test internal logic or non-browser services—those belong in unit or integration tests.
+
+- **Coverage expectations:**
+  - New UI features ship with at least 1 Playwright spec covering the happy path
+  - Critical workflows include error condition coverage (form validation errors, API failures, network issues)
+  - Page Object Model pattern (`tests/e2e/pages/`) keeps tests maintainable
+  - Tests are deterministic and run consistently (avoid hard waits; use `waitForSelector`, `waitForLoadState`, etc.)
+
+- **Demo GIFs for user-visible features:**
+  - Record 2–5 seconds of key user interaction (feature demo, not the entire test)
+  - Show the success state or primary feature behavior
+  - Commit GIF to `tests/e2e/fixtures/gifs/feature-name.gif`
+  - Embed in CURRENT.md, PR description, or wiki: `![Feature demo](tests/e2e/fixtures/gifs/feature-name.gif)`
+
+- **Local testing:**
+  - Run tests: `npm run test:e2e` or `npm run test:e2e:watch`
+  - Debug tests: `npm run test:e2e:debug` (opens inspector + headed browser)
+  - Record demos: `npm run record:e2e feature-name --headed`
+
+- **CI integration:**
+  - `.github/workflows/test-e2e.yml` runs all E2E tests on every PR
+  - Videos retained only on failure (configured in `playwright.config.ts`)
+  - GIF generation triggered when PR has `demo` label
+  - Artifacts uploaded with 90-day retention for debugging
+
+- **Documentation:**
+  - Full guide: `docs/playwright-e2e-guide.md`
+  - Setup and examples: `tests/e2e/README.md`
+  - Recording scripts: `scripts/README.md`
 
 **Bug**
 
@@ -147,6 +183,57 @@ Every issue must close with a traceable git artifact — either a code change in
 | `Spike` | Short findings note in `docs/research/<slug>.md` or inline issue comment | `Documentation` |
 
 When GitHub's native closing keyword (`Closes #N`, `Fixes #N`, `Resolves #N`) is present in the PR body and the PR merges to the default branch, GitHub automatically closes the linked issue. **Always include a closing keyword in the PR body, except for `Feedback Response` PRs which are exempt.** This is enforced by `.github/workflows/pr-issue-link-check.yml` (warning gate).
+
+## PLATE Process Contract
+
+This table documents the responsibilities and tooling for each core PLATE process element:
+
+| Process Element | Responsibility | Tool/Script | Status | Evidence |
+|---|---|---|---|---|
+| Unit & Integration Tests | Developer + Copilot | Project-specific stack (Jest, pytest, cargo test, etc.) | Required for all PRs | `.github/workflows/ci.yml` runs project commands |
+| E2E Specs | Developer + Copilot | Playwright (`npm run test:e2e`) | Required for UI features | `.github/workflows/test-e2e.yml`, `tests/e2e/specs/*.spec.ts` |
+| Demo GIFs | Developer + Copilot | `npm run record:e2e` + GIF generation scripts | Required for user-visible features | `tests/e2e/fixtures/gifs/`, PR description/CURRENT.md |
+| E2E CI Validation | Copilot + Actions | `.github/workflows/test-e2e.yml` | All PRs (videos retained on failure) | Test report, artifact links |
+| GIF Processing (CI) | Actions + ffmpeg | `.github/workflows/test-e2e.yml` `process-gifs` job | Triggered by `demo` label | Artifacts with 90-day retention, PR comment with GIF links |
+| Feature Documentation | Developer + Copilot | `CURRENT.md` update | Required for `Feature` PRs | CI gate: `.github/workflows/pr-documentation-check.yml` |
+| Release Notes | Human + Copilot | `CHANGELOG.md` | Recommended for `Feature` PRs | Links and evidence in CHANGELOG entry |
+| Issue Closure Traceability | Developer + Copilot | Closing keywords + linked PR | Required for all issues | GitHub auto-close on PR merge |
+| Process Drift Audit | Copilot | Custom audit skills | Per-epic or quarterly | `docs/audits/` committed artifacts |
+
+### Playwright E2E Key Responsibilities
+
+**Developer responsibilities:**
+- Write E2E specs for new UI features using Playwright (Page Object Model pattern)
+- Record demo GIFs locally using `npm run record:e2e` for user-visible features
+- Run `npm run test:e2e` locally before opening PR
+- Commit GIFs and specs to the repository
+
+**Copilot responsibilities (when assisting Feature work):**
+- Help write or review Playwright specs and Page Objects
+- Execute `npm run record:e2e` and GIF generation locally when needed
+- Verify all tests pass in CI before PR merge
+- Update `CURRENT.md` with evidence links to test files and demo GIFs
+
+**CI/Actions responsibilities:**
+- Run `npm run test:e2e` on every PR (`.github/workflows/test-e2e.yml`)
+- Retain videos only on failure (configured in `playwright.config.ts`)
+- Generate optimized GIFs from videos when PR has `demo` label
+- Validate GIF size (warn at 3MB, fail at 5MB)
+- Upload GIF artifacts with 90-day retention
+- Post PR comment with GIF embedding instructions and artifact links
+
+### Playwright E2E Key Tools and Commands
+
+| Tool/Command | Purpose | When to Use |
+|---|---|---|
+| `npm run test:e2e` | Run all E2E tests locally | Before opening PR |
+| `npm run test:e2e:watch` | Watch mode for development | While writing/debugging tests |
+| `npm run test:e2e:debug` | Run with Playwright Inspector + headed browser | Debugging test failures |
+| `npm run record:e2e <name> --headed` | Record test execution and generate demo GIF | After test is deterministic and passes locally |
+| `.github/workflows/test-e2e.yml` | CI gate for all PRs | Automatic on PR; validates all tests pass |
+| `tests/e2e/README.md` | Setup and usage documentation | First time using Playwright in this repo |
+| `docs/playwright-e2e-guide.md` | Comprehensive Playwright guide | Reference for best practices and troubleshooting |
+| `scripts/README.md` | Recording and GIF generation scripts | Recording demos locally |
 
 ### Spike Issues
 
@@ -267,6 +354,8 @@ gh pr merge --auto --squash <PR_NUMBER>
 For `Feedback Response` PRs, the `.github/workflows/auto-label-feedback-responses.yml` workflow applies both `risk:low` and `auto-merge` labels automatically, so the above workflow call is sufficient.
 
 The `.github/workflows/auto-merge.yml` workflow also triggers on the `auto-merge` label and verifies the marker file before proceeding — providing a second gate.
+
+The `.github/workflows/pr-autonomy-maintenance.yml` workflow continuously supports this lane: it refreshes behind branches, triggers Copilot conflict-resolution comments when merge conflicts appear, and auto-labels eligible `risk:low` PRs with `auto-merge`.
 
 **GitHub settings required** (one-time per repository):
 
@@ -428,7 +517,7 @@ Use labels as stable process metadata. Do not create ad hoc labels unless they c
 
 ## Documentation Rules
 
-Every Feature pull request must modify `CURRENT.md`. Documentation pull requests must commit a file to the appropriate `docs/` subdirectory and should explain whether they update process artifacts, product documentation, wiki source material, or public-facing claims. If a change affects feature behavior, update both implementation evidence and documentation evidence.
+Every Feature pull request must modify `CURRENT.md` or at least one `.current/*.md` entry. Documentation pull requests must commit a file to the appropriate `docs/` subdirectory and should explain whether they update process artifacts, product documentation, wiki source material, or public-facing claims. If a change affects feature behavior, update both implementation evidence and documentation evidence.
 
 See §Issue Artifact Rules for the full mapping of issue type to required artifact location.
 
